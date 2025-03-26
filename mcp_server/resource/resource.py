@@ -70,10 +70,14 @@ class Resource:
         
         return buckets
 
-    async def list_buckets(self, prefix: Optional[str] = None, max_buckets: int = None) -> List[dict]:
+    async def list_buckets(self, prefix: Optional[str] = None, max_buckets: int = 50) -> List[dict]:
         """
         List S3 buckets using async client with pagination
         """
+
+        if max_buckets > 50:
+            max_buckets = 50
+
         async with self.session.client('s3', region_name=self.region_name) as s3:
             max_buckets = max_buckets or self.max_buckets or 5
             if self.configured_buckets:
@@ -103,24 +107,29 @@ class Resource:
 
                 return buckets[:max_buckets]
 
-    async def list_objects(self, bucket: str, prefix: str = "", max_keys: int = 1000) -> List[dict]:
+    async def list_objects(self, bucket: str, prefix: str = "", max_keys: int = 20, start_after: str = "") -> List[dict]:
         """
         List objects in a specific bucket using async client with pagination
         Args:
-            bucket_name: Name of the S3 bucket
+            bucket: Name of the S3 bucket
             prefix: Object prefix for filtering
             max_keys: Maximum number of keys to return
+            start_after: the index that list from，can be last object key
         """
         #
         if self.configured_buckets and bucket not in self.configured_buckets:
             logger.warning(f"Bucket {bucket} not in configured bucket list")
             return []
 
+        if max_keys > 100:
+            max_keys = 100
+
         async with self.session.client('s3', region_name=self.region_name) as s3:
             response = await s3.list_objects_v2(
                 Bucket=bucket,
                 Prefix=prefix,
-                MaxKeys=max_keys
+                MaxKeys=max_keys,
+                StartAfter=start_after,
             )
             return response.get('Contents', [])
 
@@ -174,5 +183,19 @@ class Resource:
             '.txt', '.log', '.json', '.xml', '.yml', '.yaml', '.md',
             '.csv', '.ini', '.conf', '.py', '.js', '.html', '.css',
             '.sh', '.bash', '.cfg', '.properties'
+        }
+        return any(key.lower().endswith(ext) for ext in text_extensions)
+
+    def is_image_file(self, key: str) -> bool:
+        """Determine if a file is text-based by its extension"""
+        text_extensions = {
+            '.png', '.jpeg', '.jpg', '.gif', '.bmp', '.tiff', '.svg', '.webp',
+        }
+        return any(key.lower().endswith(ext) for ext in text_extensions)
+
+    def is_markdown_file(self, key: str) -> bool:
+        """Determine if a file is text-based by its extension"""
+        text_extensions = {
+            '.md',
         }
         return any(key.lower().endswith(ext) for ext in text_extensions)

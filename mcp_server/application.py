@@ -8,7 +8,7 @@ from mcp.types import EmptyResult, Resource as ResourceEntry
 from mcp import LoggingLevel
 from mcp.server.lowlevel import Server
 from mcp.types import Tool, AnyUrl
-from .consts.consts import ToolTypes, get_logger_name
+from .consts.consts import get_logger_name
 from .resource.resource import Resource
 from .tools.tools import Tools
 
@@ -31,11 +31,12 @@ async def set_logging_level(level: LoggingLevel) -> EmptyResult:
 
 
 @server.list_resources()
-async def list_resources(prefix: Optional[str] = None) -> list[types.Resource]:
+async def list_resources(prefix: Optional[str] = None, max_keys: int = 20) -> list[types.Resource]:
     """
     List S3 buckets and their contents as resources with pagination
     Args:
         prefix: Prefix listing after this bucket name
+        max_keys: Returns the maximum number of keys (up to 100), default 20
     """
     resources = []
     logger.debug("Starting to list resources")
@@ -53,17 +54,23 @@ async def list_resources(prefix: Optional[str] = None) -> list[types.Resource]:
 
             try:
                 # List objects in the bucket with a reasonable limit
-                objects = await resource.list_objects(bucket_name, max_keys=1000)
+                objects = await resource.list_objects(bucket_name, max_keys=max_keys)
 
                 for obj in objects:
                     if 'Key' in obj and not obj['Key'].endswith('/'):
                         object_key = obj['Key']
-                        mime_type = "text/plain" if resource.is_text_file(object_key) else "text/markdown"
+                        if resource.is_markdown_file(object_key):
+                            mime_type = "text/markdown"
+                        elif resource.is_image_file(object_key):
+                            mime_type = "image/png"
+                        else:
+                            mime_type = "text/plain"
 
                         resourceEntry = ResourceEntry(
                             uri=f"s3://{bucket_name}/{object_key}",
                             name=object_key,
-                            mimeType=mime_type
+                            mimeType=mime_type,
+                            description=str(obj)
                         )
                         resources.append(resourceEntry)
                         logger.debug(f"Added resource: {resourceEntry.uri}")
@@ -117,7 +124,15 @@ async def read_resource(uri: AnyUrl) -> str:
 
     response = await resource.get_object(bucket, key)
     file_content = response['Body']
+
+    content_type = response.get('ContentType', 'application/octet-stream')
+    # 根据内容类型返回不同的响应
+    if content_type.startswith('image/'):
+        import base64
+        file_content = base64.b64encode(file_content).decode('utf-8')
+
     return file_content
+
 
 @server.list_tools()
 async def handle_list_tools() -> list[Tool]:
@@ -129,27 +144,29 @@ async def handle_list_tools() -> list[Tool]:
                 "type": "object",
                 "properties": {
                     "prefix": {"type": "string",
-                                          "description": "Bucket prefix. The listed Buckets will be filtered based on this prefix, and only those matching the prefix will be output."},
+                               "description": "Bucket prefix. The listed Buckets will be filtered based on this prefix, and only those matching the prefix will be output."},
                     "max_buckets": {"type": "integer",
-                                   "description": "Maximum number of buckets to be returned in response. When the number is more than the count of buckets that are owned by an AWS account, return all the buckets in response. Valid Range: Minimum value of 1. Maximum value of 10000."},
+                                    "description": "Maximum number of buckets to be returned in response. When the number is more than the count of buckets that are owned by an AWS account, return all the buckets in response. Valid Range: Minimum value of 1. Maximum value of 50."},
                 },
                 "required": [],
             },
         ),
         Tool(
             name="ListObjectsV2",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
-            description="Returns some or all (up to 1,000) of the objects in a bucket with each request. You can use the request parameters as selection criteria to return a subset of the objects in a bucket. To get a list of your buckets, see ListBuckets.",
+            description="Each request will return some or all (up to 100) objects in the bucket. You can use request parameters as selection criteria to return some objects in the bucket. If you want to continue listing, set start_after to the key of the last file in the last listing result so that you can list new content. To get a list of buckets, see ListBuckets.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "bucket": {"type": "string",
                                "description": "When you use this operation with a directory bucket, you must use virtual-hosted-style requests in the format Bucket_name.s3express-az_id.region.amazonaws.com. Path-style requests are not supported. Directory bucket names must be unique in the chosen Availability Zone. Bucket names must follow the format bucket_base_name--az-id--x-s3 (for example, DOC-EXAMPLE-BUCKET--usw2-az1--x-s3)."},
                     "max_keys": {"type": "integer",
-                                "description": "Sets the maximum number of keys returned in the response. By default, the action returns up to 1,000 key names. The response might contain fewer keys but will never contain more."},
+                                 "description": "Sets the maximum number of keys returned in the response. By default, the action returns up to 20 key names. The response might contain fewer keys but will never contain more."},
                     "prefix": {"type": "string",
                                "description": "Limits the response to keys that begin with the specified prefix."},
+                    "start_after": {"type": "string",
+                                    "description": "start_after is where you want Amazon S3 to start listing from. Amazon S3 starts listing after this specified key. start_after can be any key in the bucket."}
                 },
-                "required": ["Bucket"],
+                "required": ["bucket"],
             },
         ),
         Tool(
@@ -163,7 +180,7 @@ async def handle_list_tools() -> list[Tool]:
                     "key": {"type": "string",
                             "description": "Key of the object to get. Length Constraints: Minimum length of 1."},
                 },
-                "required": ["Bucket", "Key"]
+                "required": ["bucket", "key"]
             }
         )
     ]
@@ -195,7 +212,7 @@ async def fetch_tool(
                 response = await resource.get_object(**arguments)
                 file_content = response['Body']
                 content_type = response.get('ContentType', 'application/octet-stream')
-                
+
                 # 根据内容类型返回不同的响应
                 if content_type.startswith('image/'):
                     # 图片类型，需要转换为 base64
@@ -209,6 +226,10 @@ async def fetch_tool(
                         )
                     ]
                 else:
+                    if isinstance(file_content, bytes):
+                        text_content = file_content.decode('utf-8')
+                    else:
+                        text_content = str(file_content)
                     return [
                         types.TextContent(
                             type="text",
