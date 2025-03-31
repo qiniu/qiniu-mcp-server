@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 logger.info("Starting MCP server")
 
 SAMPLE_RESOURCES = {
-    "greeting": "Hello! This is a sample text resource for qiniu.",
-    "help": "This server provides a few sample text resources for qiniu.",
-    "about": "This is the simple-resource MCP server implementation.",
+    "greeting": "Hello! This is a resource for qiniu.",
+    "help": "This server provides a few resources for qiniu.",
+    "about": "This is the MCP server implementation.",
 }
 
 @click.command()
