@@ -20,4 +20,4 @@ build-backend = "hatchling.build"
 packages = ["mcp_server"]
 
 [project.scripts]
-s3-mcp-server = "mcp_server:main"
+qiniu-mcp-server = "mcp_server:main"

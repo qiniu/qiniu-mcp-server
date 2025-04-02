@@ -8,11 +8,16 @@ from mcp.types import EmptyResult, Resource as ResourceEntry
 from mcp import LoggingLevel
 from mcp.server.lowlevel import Server
 from mcp.types import Tool, AnyUrl
+
+from .consts import consts
 from .consts.consts import get_logger_name
 from .resource.resource import Resource
 from .tools.tools import Tools
+from .config import config
 
-resource = Resource()
+# 加载配置
+conf = config.load_config()
+resource = Resource(conf)
 tools = Tools(resource)
 logger = logging.getLogger(get_logger_name())
 
@@ -40,12 +45,11 @@ async def list_resources(prefix: Optional[str] = None, max_keys: int = 20) -> li
     """
     resources = []
     logger.debug("Starting to list resources")
-    logger.debug(f"Configured buckets: {resource.configured_buckets}")
+    logger.debug(f"Configured buckets: {resource.config.buckets}")
 
     try:
         # Get limited number of buckets
         buckets = await resource.list_buckets(prefix)
-        logger.debug(f"Processing {len(buckets)} buckets (max: {resource.max_buckets})")
 
         # limit concurrent operations
         async def process_bucket(bucket):
@@ -138,21 +142,19 @@ async def read_resource(uri: AnyUrl) -> str:
 async def handle_list_tools() -> list[Tool]:
     return [
         Tool(
-            name="ListBuckets",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html
+            name=consts.ToolTypesListBuckets,  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html
             description="Returns a list of all buckets owned by the authenticated sender of the request. To grant IAM permission to use this operation, you must add the s3:ListAllMyBuckets policy action.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "prefix": {"type": "string",
                                "description": "Bucket prefix. The listed Buckets will be filtered based on this prefix, and only those matching the prefix will be output."},
-                    "max_buckets": {"type": "integer",
-                                    "description": "Maximum number of buckets to be returned in response. When the number is more than the count of buckets that are owned by an AWS account, return all the buckets in response. Valid Range: Minimum value of 1. Maximum value of 50."},
                 },
                 "required": [],
             },
         ),
         Tool(
-            name="ListObjectsV2",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+            name=consts.ToolTypesListObjects,  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
             description="Each request will return some or all (up to 100) objects in the bucket. You can use request parameters as selection criteria to return some objects in the bucket. If you want to continue listing, set start_after to the key of the last file in the last listing result so that you can list new content. To get a list of buckets, see ListBuckets.",
             inputSchema={
                 "type": "object",
@@ -170,7 +172,7 @@ async def handle_list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="GetObject",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+            name=consts.ToolTypesGetObject,  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
             description="Retrieves an object from Amazon S3. In the GetObject request, specify the full key name for the object. General purpose buckets - Both the virtual-hosted-style requests and the path-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg, specify the object key name as /photos/2006/February/sample.jpg. For a path-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket, specify the object key name as /examplebucket/photos/2006/February/sample.jpg. Directory buckets - Only virtual-hosted-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket--use1-az5--x-s3, specify the object key name as /photos/2006/February/sample.jpg. Also, when you make requests to this API operation, your requests are sent to the Zonal endpoint. These endpoints support virtual-hosted-style requests in the format https://bucket_name.s3express-az_id.region.amazonaws.com/key-name . Path-style requests are not supported.",
             inputSchema={
                 "type": "object",
@@ -192,7 +194,7 @@ async def fetch_tool(
 ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
     try:
         match name:
-            case "ListBuckets":
+            case consts.ToolTypesListBuckets:
                 buckets = await resource.list_buckets(**arguments)
                 return [
                     types.TextContent(
@@ -200,7 +202,7 @@ async def fetch_tool(
                         text=str(buckets)
                     )
                 ]
-            case "ListObjectsV2":
+            case consts.ToolTypesListObjects:
                 objects = await resource.list_objects(**arguments)
                 return [
                     types.TextContent(
@@ -208,7 +210,7 @@ async def fetch_tool(
                         text=str(objects)
                     )
                 ]
-            case "GetObject":
+            case consts.ToolTypesGetObject:
                 response = await resource.get_object(**arguments)
                 file_content = response['Body']
                 content_type = response.get('ContentType', 'application/octet-stream')

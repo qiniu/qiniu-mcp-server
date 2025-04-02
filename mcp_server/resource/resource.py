@@ -1,10 +1,11 @@
-import os
 import aioboto3
 import asyncio
 import logging
+
+from mcp_server.config.config import Config
 from mcp_server.consts import consts
 from typing import List, Dict, Any, Optional
-from botocore.config import Config
+from botocore.config import Config as S3Config
 
 logger = logging.getLogger(consts.get_logger_name())
 
@@ -14,80 +15,42 @@ class Resource:
     Part of a collection of resource providers (S3, DynamoDB, etc.) for the MCP server.
     """
 
-    def __init__(self, region_name: str = None):
+    def __init__(self, config: Config = None):
         """
         Initialize S3 resource provider
-        Args:
-            region_name: AWS region name
-            profile_name: AWS profile name
-            max_buckets: Maximum number of buckets to process (default: 5)
         """
-
         # Configure boto3 with retries and timeouts
-        self.config = Config(
+        self.s3_config = S3Config(
             retries=dict(
                 max_attempts=3,
                 mode='adaptive'
             ),
             connect_timeout=5,
             read_timeout=60,
-            max_pool_connections=50
+            max_pool_connections=50,
         )
-
+        self.config = config
         self.session = aioboto3.Session()
-        self.region_name = region_name
-        self.max_buckets = int(os.getenv('S3_MAX_BUCKETS', '5'))
-        logger.info(f"Initializing Resource with max_buckets: {self.max_buckets}")
-        self.configured_buckets = self._get_configured_buckets()
-        logger.info(f"Configured buckets: {self.configured_buckets}")
 
-    def _get_configured_buckets(self) -> List[str]:
-        """
-        Get configured bucket names from environment variables.
-        Format in .env file:
-        S3_BUCKETS=bucket1,bucket2,bucket3
-        or
-        S3_BUCKET_1=bucket1
-        S3_BUCKET_2=bucket2
-        see env.example ############
-        """
-
-        # Try comma-separated list first
-        bucket_list = os.getenv('S3_BUCKETS')
-        if bucket_list:
-            buckets = [b.strip() for b in bucket_list.split(',')]
-            return buckets
-
-        # Try individual bucket entries
-        buckets = []
-        i = 1
-        while True:
-            bucket = os.getenv(f'S3_BUCKET_{i}')
-            if not bucket:
-                break
-            buckets.append(bucket.strip())
-            i += 1
-        
-        return buckets
-
-    async def list_buckets(self, prefix: Optional[str] = None, max_buckets: int = 50) -> List[dict]:
+    async def list_buckets(self, prefix: Optional[str] = None) -> List[dict]:
         """
         List S3 buckets using async client with pagination
         """
+        max_buckets = 50
 
-        if max_buckets > 50:
-            max_buckets = 50
-
-        async with self.session.client('s3', region_name=self.region_name) as s3:
-            max_buckets = max_buckets or self.max_buckets or 5
-            if self.configured_buckets:
+        async with self.session.client('s3',
+                                       aws_access_key_id=self.config.access_key,
+                                       aws_secret_access_key=self.config.secret_key,
+                                       endpoint_url=self.config.endpoint_url,
+                                       region_name=self.config.region_name) as s3:
+            if self.config.buckets:
                 # If buckets are configured, only return those
                 response = await s3.list_buckets()
                 all_buckets = response.get('Buckets', [])
-                
+
                 configured_bucket_list = [
                     bucket for bucket in all_buckets
-                    if bucket['Name'] in self.configured_buckets
+                    if bucket['Name'] in self.config.buckets
                 ]
 
                 if prefix:
@@ -107,7 +70,8 @@ class Resource:
 
                 return buckets[:max_buckets]
 
-    async def list_objects(self, bucket: str, prefix: str = "", max_keys: int = 20, start_after: str = "") -> List[dict]:
+    async def list_objects(self, bucket: str, prefix: str = "", max_keys: int = 20, start_after: str = "") -> List[
+        dict]:
         """
         List objects in a specific bucket using async client with pagination
         Args:
@@ -117,14 +81,21 @@ class Resource:
             start_after: the index that list from，can be last object key
         """
         #
-        if self.configured_buckets and bucket not in self.configured_buckets:
+        if self.config.buckets and bucket not in self.config.buckets:
             logger.warning(f"Bucket {bucket} not in configured bucket list")
             return []
+
+        if isinstance(max_keys, str):
+            max_keys = int(max_keys)
 
         if max_keys > 100:
             max_keys = 100
 
-        async with self.session.client('s3', region_name=self.region_name) as s3:
+        async with self.session.client('s3',
+                                       aws_access_key_id=self.config.access_key,
+                                       aws_secret_access_key=self.config.secret_key,
+                                       endpoint_url=self.config.endpoint_url,
+                                       region_name=self.config.region_name) as s3:
             response = await s3.list_objects_v2(
                 Bucket=bucket,
                 Prefix=prefix,
@@ -138,8 +109,9 @@ class Resource:
         Get object from S3 using streaming to handle large files and PDFs reliably.
         The method reads the stream in chunks and concatenates them before returning.
         """
-        if self.configured_buckets and bucket not in self.configured_buckets:
-            raise ValueError(f"Bucket {bucket} not in configured bucket list")
+        if self.config.buckets and bucket not in self.config.buckets:
+            logger.warning(f"Bucket {bucket} not in configured bucket list")
+            return {}
 
         attempt = 0
         last_exception = None
@@ -147,8 +119,11 @@ class Resource:
         while attempt < max_retries:
             try:
                 async with self.session.client('s3',
-                                               region_name=self.region_name,
-                                               config=self.config) as s3:
+                                               aws_access_key_id=self.config.access_key,
+                                               aws_secret_access_key=self.config.secret_key,
+                                               endpoint_url=self.config.endpoint_url,
+                                               region_name=self.config.region_name,
+                                               config=self.s3_config) as s3:
 
                     # Get the object and its stream
                     response = await s3.get_object(Bucket=bucket, Key=key)
