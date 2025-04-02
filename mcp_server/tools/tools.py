@@ -1,18 +1,30 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Callable
 
-from mcp_server.resource import resource
+from mcp import types
 
 
-class Tools:
+from mcp.types import Tool
 
-    def __init__(self, resource: resource.Resource):
-        self.resource = resource
+ToolEntryCallback = Callable[[dict], list[types.TextContent | types.ImageContent | types.EmbeddedResource]]
 
-    async def list_buckets(self, prefix: Optional[str] = None) -> List[dict]:
-        return await self.resource.list_buckets(prefix)
 
-    async def list_objects(self, bucket_name: str, prefix: Optional[str] = None) -> List[dict]:
-        return await self.resource.list_objects(bucket_name, prefix)
+class ToolEntry:
+    def __init__(self, tool: Tool, callback: ToolEntryCallback):
+        self.tool = tool
+        self.callback = callback
 
-    async def get_object(self, bucket_name: str, key: str) -> Dict[str, Any]:
-        return await self.resource.get_object(bucket_name, key)
+
+__all_tools = Dict[str, ToolEntry]()
+
+
+def register_tool(tool: Tool, callback: ToolEntryCallback):
+    __all_tools[tool.name] = ToolEntry(tool, callback)
+
+
+async def fetch_tool(
+        name: str, arguments: dict
+) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+    tool_entry = __all_tools.get(name)
+    if tool_entry is None:
+        raise ValueError(f"Tool {name} not found")
+    return await tool_entry.callback(arguments)
