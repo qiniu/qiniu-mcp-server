@@ -1,6 +1,6 @@
 # Qiniu MCP Server
 
-一个基于 MCP (Model Control Protocol) 的 S3 资源服务器，支持访问和管理七牛云 Kodo 存储服务。
+七牛云对象存储 Kodo 基于 S3 协议构建 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP Server 来访问七牛云存储的空间和对象。
 
 详细情况请参考 [基于 MCP 使用大模型访问对象存储 Kodo](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
 
