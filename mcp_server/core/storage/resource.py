@@ -10,18 +10,19 @@ from ...resource import resource
 
 logger = logging.getLogger(consts.get_logger_name())
 
+
 class _ResourceProvider(resource.ResourceProvider):
     def __init__(self, storage: Storage):
         super().__init__("s3")
         self.storage = storage
 
-    async def list_resources(self, prefix: Optional[str] = None, max_keys: int = 20, **kwargs) -> list[types.Resource]:
+    async def list_resources(self, prefix: str = "", max_keys: int = 20, **kwargs) -> list[types.Resource]:
         """
-            List S3 buckets and their contents as resources with pagination
-            Args:
-                prefix: Prefix listing after this bucket name
-                max_keys: Returns the maximum number of keys (up to 100), default 20
-            """
+        List S3 buckets and their contents as resources with pagination
+        Args:
+            prefix: Prefix listing after this bucket name
+            max_keys: Returns the maximum number of keys (up to 100), default 20
+        """
         resources = []
         logger.debug("Starting to list resources")
         logger.debug(f"Configured buckets: {self.storage.config.buckets}")
@@ -118,5 +119,3 @@ class _ResourceProvider(resource.ResourceProvider):
 def _register_resource_provider(storage: Storage):
     resource_provider = _ResourceProvider(storage)
     resource.register_resource_provider(resource_provider)
-
-

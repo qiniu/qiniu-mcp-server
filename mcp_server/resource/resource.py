@@ -1,7 +1,11 @@
+import logging
 from abc import abstractmethod
-from typing import Dict, Optional
+from typing import Dict, Coroutine, Awaitable, AsyncGenerator
 
 from mcp import types
+from mcp_server.consts import consts
+
+logger = logging.getLogger(consts.get_logger_name())
 
 
 class ResourceProvider:
@@ -10,7 +14,7 @@ class ResourceProvider:
         self.scheme = scheme
 
     @abstractmethod
-    async def list_resources(self, prefix: Optional[str], max_keys: int = 20, **kwargs) -> list[types.Resource]:
+    async def list_resources(self, **kwargs) -> list[types.Resource]:
         pass
 
     @abstractmethod
@@ -21,25 +25,23 @@ class ResourceProvider:
 _all_resource_providers: Dict[str, ResourceProvider] = {}
 
 
-async def list_resources(prefix: Optional[str], max_keys: int = 20, **kwargs) -> list[types.Resource]:
+async def list_resources(**kwargs) -> AsyncGenerator[types.Resource, None]:
     if len(_all_resource_providers) == 0:
-        yield []
         return
 
     for provider in _all_resource_providers.values():
-        resources = await provider.list_resources(prefix=prefix, max_keys=max_keys, **kwargs)
+        resources = await provider.list_resources(**kwargs)
         for resource in resources:
             yield resource
+    return
 
 
 async def read_resource(uri: types.AnyUrl, **kwargs) -> str:
     if len(_all_resource_providers) == 0:
-        yield ""
-        return
+        return ""
 
     provider = _all_resource_providers.get(uri.scheme)
-    yield await provider.read_resource(uri=uri, **kwargs)
-    return
+    return await provider.read_resource(uri=uri, **kwargs)
 
 
 def register_resource_provider(provider: ResourceProvider):

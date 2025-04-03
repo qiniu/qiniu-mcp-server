@@ -1,6 +1,6 @@
-import asyncio
 import logging
-from typing import Optional
+from contextlib import aclosing
+from typing import List, Optional, Dict, Any, Union, Awaitable, AsyncGenerator
 
 import mcp.types as types
 from mcp.types import EmptyResult, Resource as ResourceEntry
@@ -36,15 +36,12 @@ async def set_logging_level(level: LoggingLevel) -> EmptyResult:
 
 
 @server.list_resources()
-async def list_resources(prefix: Optional[str], max_keys: int = 20, **kwargs) -> list[types.Resource]:
-    """
-     List S3 buckets and their contents as resources with pagination
-     Args:
-         prefix: Prefix listing after this bucket name
-         max_keys: Returns the maximum number of keys (up to 100), default 20
-     """
-    return resource.list_resources(prefix=prefix, max_keys=max_keys, **kwargs)
-
+async def list_resources(**kwargs) -> list[types.Resource]:
+    resource_list = []
+    async with aclosing(resource.list_resources(**kwargs)) as results:
+        async for result in results:
+            resource_list.append(result)
+    return resource_list
 
 @server.read_resource()
 async def read_resource(uri: AnyUrl) -> str:
@@ -54,7 +51,7 @@ async def read_resource(uri: AnyUrl) -> str:
     Returns:
         Dict containing 'contents' list with uri, mimeType, and text for each resource
     """
-    return resource.read_resource(uri)
+    return await resource.read_resource(uri)
 
 
 @server.list_tools()
