@@ -1,9 +1,12 @@
+import logging
+
 from mcp import types
 
 from .storage import Storage
 from ...consts import consts
 from ...tools import tools
 
+logger = logging.getLogger(consts.get_logger_name())
 
 class _ToolImplement:
 
@@ -63,18 +66,13 @@ class _ToolImplement:
 
 def _register_tools(storage: Storage):
     tool_implement = _ToolImplement(storage)
+    tools.register_tool(_list_buckets_tool(), tool_implement.list_buckets)
+    tools.register_tool(_list_objects_tool(), tool_implement.list_objects)
+    tools.register_tool(_get_object_tool(), tool_implement.get_object)
 
-    list_buckets_tool = _list_buckets_tool(tool_implement)
-    list_objects_tool = _list_objects_tool(tool_implement)
-    get_object_tool = _get_object_tool(tool_implement)
-
-    tools.register_tool(list_buckets_tool, tool_implement.list_buckets)
-    tools.register_tool(list_objects_tool, tool_implement.list_objects)
-    tools.register_tool(get_object_tool, tool_implement.get_object)
-
-def _list_buckets_tool(tool_implement: _ToolImplement) -> types.Tool:
+def _list_buckets_tool() -> types.Tool:
     t = types.Tool(
-        name=consts.ToolTypesListBuckets,  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html
+        name="ListBuckets",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html
         description="Returns a list of all buckets owned by the authenticated sender of the request. To grant IAM permission to use this operation, you must add the s3:ListAllMyBuckets policy action.",
         inputSchema={
             "type": "object",
@@ -88,9 +86,9 @@ def _list_buckets_tool(tool_implement: _ToolImplement) -> types.Tool:
     return t
 
 
-def _list_objects_tool(tool_implement: _ToolImplement) -> types.Tool:
+def _list_objects_tool() -> types.Tool:
     t = types.Tool(
-        name=consts.ToolTypesListObjects,  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+        name="ListObjects",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
         description="Each request will return some or all (up to 100) objects in the bucket. You can use request parameters as selection criteria to return some objects in the bucket. If you want to continue listing, set start_after to the key of the last file in the last listing result so that you can list new content. To get a list of buckets, see ListBuckets.",
         inputSchema={
             "type": "object",
@@ -110,9 +108,9 @@ def _list_objects_tool(tool_implement: _ToolImplement) -> types.Tool:
     return t
 
 
-def _get_object_tool(tool_implement: _ToolImplement) -> types.Tool:
+def _get_object_tool() -> types.Tool:
     t = types.Tool(
-        name=consts.ToolTypesGetObject,  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+        name="GetObject",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
         description="Retrieves an object from Amazon S3. In the GetObject request, specify the full key name for the object. General purpose buckets - Both the virtual-hosted-style requests and the path-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg, specify the object key name as /photos/2006/February/sample.jpg. For a path-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket, specify the object key name as /examplebucket/photos/2006/February/sample.jpg. Directory buckets - Only virtual-hosted-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket--use1-az5--x-s3, specify the object key name as /photos/2006/February/sample.jpg. Also, when you make requests to this API operation, your requests are sent to the Zonal endpoint. These endpoints support virtual-hosted-style requests in the format https://bucket_name.s3express-az_id.region.amazonaws.com/key-name . Path-style requests are not supported.",
         inputSchema={
             "type": "object",

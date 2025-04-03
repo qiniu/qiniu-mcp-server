@@ -50,7 +50,7 @@ async def fetch_tool(
         raise ValueError(f"Tool {name} not found")
 
     try:
-        result = tool_entry.callback(arguments)
+        result = tool_entry.callback(**arguments)
         # 统一处理同步/异步回调
         return await result if inspect.isawaitable(result) else result
     except Exception as e:

@@ -7,11 +7,6 @@ def get_logger_name() -> str:
     return __LOGGER_NAME
 
 
-ToolTypesListBuckets = "ListBuckets"
-ToolTypesListObjects = "ListObjects"
-ToolTypesGetObject = "GetObject"
-
-
 ConfigEnvKeyAccessKey = "QINIU_ACCESS_KEY"
 ConfigEnvKeySecretKey = "QINIU_SECRET_KEY"
 ConfigEnvKeyEndpointUrl = "QINIU_ENDPOINT_URL"
