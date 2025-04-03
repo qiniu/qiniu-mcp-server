@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Dict, AsyncGenerator
 
 from mcp import types
-from mcp_server.consts import consts
+from ..consts import consts
 
 logger = logging.getLogger(consts.get_logger_name())
 
