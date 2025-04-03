@@ -8,7 +8,7 @@ from botocore.config import Config as S3Config
 from ...config import config
 from ...consts import consts
 
-logger = logging.getLogger(consts.get_logger_name())
+logger = logging.getLogger(consts.LOGGER_NAME)
 
 
 class Storage:

@@ -3,9 +3,11 @@ import logging
 
 import anyio
 import click
-from . import application
 
-logger = logging.getLogger(__name__)
+from . import application
+from .consts import consts
+
+logger = logging.getLogger(consts.LOGGER_NAME)
 logger.info("Starting MCP server")
 
 SAMPLE_RESOURCES = {
@@ -13,6 +15,7 @@ SAMPLE_RESOURCES = {
     "help": "This server provides a few resources for qiniu.",
     "about": "This is the MCP server implementation.",
 }
+
 
 @click.command()
 @click.option("--port", default=8000, help="Port to listen on for SSE")

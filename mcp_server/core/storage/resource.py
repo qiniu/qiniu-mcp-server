@@ -7,8 +7,7 @@ from .storage import Storage
 from ...consts import consts
 from ...resource import resource
 
-logger = logging.getLogger(consts.get_logger_name())
-
+logger = logging.getLogger(consts.LOGGER_NAME)
 
 class _ResourceProvider(resource.ResourceProvider):
     def __init__(self, storage: Storage):
@@ -115,6 +114,6 @@ class _ResourceProvider(resource.ResourceProvider):
         return file_content
 
 
-def _register_resource_provider(storage: Storage):
+def register_resource_provider(storage: Storage):
     resource_provider = _ResourceProvider(storage)
     resource.register_resource_provider(resource_provider)

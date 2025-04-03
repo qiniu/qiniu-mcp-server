@@ -6,7 +6,7 @@ from .storage import Storage
 from ...consts import consts
 from ...tools import tools
 
-logger = logging.getLogger(consts.get_logger_name())
+logger = logging.getLogger(consts.LOGGER_NAME)
 
 class _ToolImplement:
 
@@ -64,7 +64,7 @@ class _ToolImplement:
             ]
 
 
-def _register_tools(storage: Storage):
+def register_tools(storage: Storage):
     tool_implement = _ToolImplement(storage)
     tools.register_tool(_list_buckets_tool(), tool_implement.list_buckets)
     tools.register_tool(_list_objects_tool(), tool_implement.list_objects)

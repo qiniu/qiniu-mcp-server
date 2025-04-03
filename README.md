@@ -1,19 +1,9 @@
 # Qiniu MCP Server
 
-七牛云对象存储 Kodo 基于 S3 协议构建 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP
-Server 来访问七牛云存储的空间和对象。
+基于七牛云产品构建的 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP
+Server 来访问七牛云存储、Dora 等。
 
-详细情况请参考 [基于 MCP 使用大模型访问对象存储 Kodo](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
-
-## 功能特性
-
-- 资源
-    - 列举资源（受 AI 上下文限制，列举资源时默认只会列举 20 个资源，如果需要列举所有可使用工具分批次列举）
-    - 读取资源
-- 工具
-    - 支持列举存储桶（Buckets）
-    - 支持列举对象（Objects）
-    - 支持读取对象内容
+关于存储详细情况请参考 [基于 MCP 使用大模型访问对象存储 Kodo](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
 
 ## 前置要求
 
@@ -93,7 +83,7 @@ uv --directory . run qiniu-mcp-server --transport sse --port 8000
 ## 开发
 
 扩展功能，首先在 core 目录下新增一个业务目录（eg: 存储 -> storage），在此业务目录下完成功能拓展。
-在业务目录下新建一个 loader.py 文件，在此文件中定义 load 函数用于注册业务工具或者资源，最后在 core 目录下的 __init__.py
+在业务目录下新建一个 `loader.py` 文件，在此文件中定义 load 函数用于注册业务工具或者资源，最后在 `core` 目录下的 `__init__.py`
 中调用此 load 函数完成工具和资源的注册。
 
 ```shell

@@ -5,7 +5,7 @@ from typing import Dict, AsyncGenerator
 from mcp import types
 from ..consts import consts
 
-logger = logging.getLogger(consts.get_logger_name())
+logger = logging.getLogger(consts.LOGGER_NAME)
 
 
 class ResourceProvider:

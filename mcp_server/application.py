@@ -14,7 +14,7 @@ from .resource import resource
 from .tools import tools
 
 
-logger = logging.getLogger(consts.get_logger_name())
+logger = logging.getLogger(consts.LOGGER_NAME)
 
 core.load()
 server = Server("mcp-simple-resource")
