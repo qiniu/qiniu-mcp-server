@@ -7,14 +7,8 @@ def get_logger_name() -> str:
     return __LOGGER_NAME
 
 
-ToolTypesListBuckets = "ListBuckets"
-ToolTypesListObjects = "ListObjects"
-ToolTypesGetObject = "GetObject"
-
-
-ConfigEnvKeyAccessKey = "QINIU_ACCESS_KEY"
-ConfigEnvKeySecretKey = "QINIU_SECRET_KEY"
-ConfigEnvKeyEndpointUrl = "QINIU_ENDPOINT_URL"
-ConfigEnvKeyRegionName = "QINIU_REGION_NAME"
-ConfigEnvKeyBuckets = "QINIU_BUCKETS"
-ConfigEnvKeyMaxBuckets = "QINIU_MAX_BUCKETS"
+CONFIG_ENV_KEY_ACCESS_KEY = "QINIU_ACCESS_KEY"
+CONFIG_ENV_KEY_SECRET_KEY = "QINIU_SECRET_KEY"
+CONFIG_ENV_KEY_ENDPOINT_URL = "QINIU_ENDPOINT_URL"
+CONFIG_ENV_KEY_REGION_NAME = "QINIU_REGION_NAME"
+CONFIG_ENV_KEY_BUCKETS = "QINIU_BUCKETS"
