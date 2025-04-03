@@ -22,10 +22,10 @@ class Config:
 
 def load_config() -> Config:
     config = Config()
-    config.access_key = os.getenv(consts.ConfigEnvKeyAccessKey, '')
-    config.secret_key = os.getenv(consts.ConfigEnvKeySecretKey, '')
-    config.endpoint_url = os.getenv(consts.ConfigEnvKeyEndpointUrl, '')
-    config.region_name = os.getenv(consts.ConfigEnvKeyRegionName, '')
+    config.access_key = os.getenv(consts.CONFIG_ENV_KEY_ACCESS_KEY, '')
+    config.secret_key = os.getenv(consts.CONFIG_ENV_KEY_SECRET_KEY, '')
+    config.endpoint_url = os.getenv(consts.CONFIG_ENV_KEY_ENDPOINT_URL, '')
+    config.region_name = os.getenv(consts.CONFIG_ENV_KEY_REGION_NAME, '')
     config.buckets = _get_configured_buckets_from_env()
     logger.info(f"Configured   access_key: {config.access_key}")
     logger.info(f"Configured endpoint_url: {config.endpoint_url}")
@@ -35,7 +35,7 @@ def load_config() -> Config:
 
 
 def _get_configured_buckets_from_env() -> List[str]:
-    bucket_list = os.getenv(consts.ConfigEnvKeyBuckets)
+    bucket_list = os.getenv(consts.CONFIG_ENV_KEY_BUCKETS)
     if bucket_list:
         buckets = [b.strip() for b in bucket_list.split(',')]
         return buckets
