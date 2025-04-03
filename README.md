@@ -1,17 +1,19 @@
 # Qiniu MCP Server
 
-七牛云对象存储 Kodo 基于 S3 协议构建 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP Server 来访问七牛云存储的空间和对象。
+七牛云对象存储 Kodo 基于 S3 协议构建 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP
+Server 来访问七牛云存储的空间和对象。
 
 详细情况请参考 [基于 MCP 使用大模型访问对象存储 Kodo](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
 
 ## 功能特性
+
 - 资源
-  - 列举资源（受 AI 上下文限制，列举资源时默认只会列举 20 个资源，如果需要列举所有可使用工具分批次列举）
-  - 读取资源
+    - 列举资源（受 AI 上下文限制，列举资源时默认只会列举 20 个资源，如果需要列举所有可使用工具分批次列举）
+    - 读取资源
 - 工具
-  - 支持列举存储桶（Buckets）
-  - 支持列举对象（Objects）
-  - 支持读取对象内容
+    - 支持列举存储桶（Buckets）
+    - 支持列举对象（Objects）
+    - 支持读取对象内容
 
 ## 前置要求
 
@@ -89,11 +91,21 @@ uv --directory . run qiniu-mcp-server --transport sse --port 8000
 ```
 
 ## 开发
+
 扩展功能，首先在 core 目录下新增一个业务目录（eg: 存储 -> storage），在此业务目录下完成功能拓展。
-在业务目录下新建一个 loader.py 文件，在此文件用于加载业务的工具或者资源，。
+在业务目录下新建一个 loader.py 文件，在此文件中定义 load 函数用于注册业务工具或者资源，最后在 core 目录下的 __init__.py
+中调用此 load 函数完成工具和资源的注册。
 
-### 扩展工具
-
+```shell
+core
+├── __init__.py # 各个业务工具或者资源加载
+└── storage # 存储业务目录
+    ├── __init__.py
+    ├── loader.py  # 加载存储工具或者资源
+    ├── resource.py # 存储资源扩展
+    ├── storage.py # 存储工具类
+    └── tools.py # 存储工具扩展
+```
 
 ## 测试
 
@@ -133,10 +145,10 @@ npx @modelcontextprotocol/inspector uv --directory . run qiniu-mcp-server
    ```
     3. 点击 qiniu mcp server 的链接开关进行连接
 4. 在 cline 中创建一个 chat 窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出几个示例：
-      - 列举 qiniu 的资源信息 
-      - 列举 qiniu 中所有的 bucket 
-      - 列举 qiniu 中 xxx bucket 的文件 
-      - 读取 qiniu xxx bucket 中 yyy 的文件内容
+    - 列举 qiniu 的资源信息
+    - 列举 qiniu 中所有的 bucket
+    - 列举 qiniu 中 xxx bucket 的文件
+    - 读取 qiniu xxx bucket 中 yyy 的文件内容
 
 
 
