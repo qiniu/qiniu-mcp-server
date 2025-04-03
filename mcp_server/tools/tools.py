@@ -1,6 +1,6 @@
 import inspect
 
-from typing import Optional, List, Dict, Any, Callable, Union, Awaitable
+from typing import List, Dict, Callable, Union, Awaitable
 
 from mcp import types
 

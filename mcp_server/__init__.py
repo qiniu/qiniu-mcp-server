@@ -1,5 +1,8 @@
 import logging
+
 from dotenv import load_dotenv
+
+from .server import main
 
 # Load environment variables at package initialization
 load_dotenv()
@@ -8,7 +11,5 @@ load_dotenv()
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 logger.info("Initializing MCP server package")
-
-from .server import main
 
 __all__ = ['main']

@@ -1,6 +1,6 @@
 import logging
 from abc import abstractmethod
-from typing import Dict, Coroutine, Awaitable, AsyncGenerator
+from typing import Dict, AsyncGenerator
 
 from mcp import types
 from mcp_server.consts import consts

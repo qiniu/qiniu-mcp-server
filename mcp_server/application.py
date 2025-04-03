@@ -1,28 +1,23 @@
 import logging
 from contextlib import aclosing
-from typing import List, Optional, Dict, Any, Union, Awaitable, AsyncGenerator
 
 import mcp.types as types
-from mcp.types import EmptyResult, Resource as ResourceEntry
+from mcp.types import EmptyResult
 
 from mcp import LoggingLevel
 from mcp.server.lowlevel import Server
 from mcp.types import Tool, AnyUrl
 
+from . import core
 from .consts import consts
-from .config import config
 from .resource import resource
 from .tools import tools
-from .core.storage import loader
+
 
 logger = logging.getLogger(consts.get_logger_name())
 
-# 加载配置
-conf = config.load_config()
-loader.load(conf)
-
+core.load()
 server = Server("mcp-simple-resource")
-
 
 @server.set_logging_level()
 async def set_logging_level(level: LoggingLevel) -> EmptyResult:

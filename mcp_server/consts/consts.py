@@ -1,5 +1,3 @@
-from enum import Enum
-
 __LOGGER_NAME = "qiniu-s3-mcp"
 
 

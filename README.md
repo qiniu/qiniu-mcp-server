@@ -88,6 +88,13 @@ uv --directory . run qiniu-mcp-server
 uv --directory . run qiniu-mcp-server --transport sse --port 8000
 ```
 
+## 开发
+扩展功能，首先在 core 目录下新增一个业务目录（eg: 存储 -> storage），在此业务目录下完成功能拓展。
+在业务目录下新建一个 loader.py 文件，在此文件用于加载业务的工具或者资源，。
+
+### 扩展工具
+
+
 ## 测试
 
 ### 使用 Model Control Protocol Inspector 测试
