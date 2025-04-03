@@ -43,7 +43,7 @@ async def list_resources(prefix: Optional[str], max_keys: int = 20, **kwargs) ->
          prefix: Prefix listing after this bucket name
          max_keys: Returns the maximum number of keys (up to 100), default 20
      """
-    return resource.list_resources(**kwargs)
+    return resource.list_resources(prefix=prefix, max_keys=max_keys, **kwargs)
 
 
 @server.read_resource()

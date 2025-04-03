@@ -3,7 +3,6 @@ import inspect
 from typing import Optional, List, Dict, Any, Callable, Union, Awaitable
 
 from mcp import types
-from mcp.server.fastmcp.tools import Tool
 
 ToolEntryCallback = Callable[[dict], Union[
     list[types.TextContent | types.ImageContent | types.EmbeddedResource],
@@ -12,7 +11,7 @@ ToolEntryCallback = Callable[[dict], Union[
 
 
 class ToolEntry:
-    def __init__(self, tool: Tool, callback: ToolEntryCallback):
+    def __init__(self, tool: types.Tool, callback: ToolEntryCallback):
         self.tool = tool
         self.callback = callback
 
@@ -20,7 +19,7 @@ class ToolEntry:
 # 初始化全局工具字典
 _all_tools: Dict[str, ToolEntry] = {}
 
-def all_tools() -> List[Tool]:
+def all_tools() -> List[types.Tool]:
     """获取所有工具"""
     if not _all_tools:
         raise ValueError("No tools registered")
@@ -29,13 +28,13 @@ def all_tools() -> List[Tool]:
     if not tool_values:
         raise ValueError("No tools registered")
 
-    all_tool_items = [Tool]
+    all_tool_items = []
     for tool in tool_values:
         all_tool_items.append(tool.tool)
 
     return all_tool_items
 
-def register_tool(tool: Tool, callback: ToolEntryCallback) -> None:
+def register_tool(tool: types.Tool, callback: ToolEntryCallback) -> None:
     """注册工具，禁止重复名称"""
     name = tool.name
     if name in _all_tools:
@@ -59,4 +58,4 @@ async def fetch_tool(
 
 
 # 明确导出接口
-__all__ = ["Tool", "all_tools", "register_tool", "fetch_tool"]
+__all__ = ["all_tools", "register_tool", "fetch_tool"]
