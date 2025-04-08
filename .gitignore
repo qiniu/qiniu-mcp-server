@@ -9,3 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+.env.dora
+.env.kodo
+
+mcp_server/test.py

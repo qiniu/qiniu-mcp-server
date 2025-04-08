@@ -10,6 +10,7 @@ dependencies = [
     "openai>=1.66.3",
     "pip>=25.0.1",
     "python-dotenv>=1.0.1",
+    "qiniu>=7.16.0",
 ]
 
 [build-system]
