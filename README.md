@@ -1,9 +1,9 @@
 # Qiniu MCP Server
 
 基于七牛云产品构建的 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP
-Server 来访问七牛云存储、Dora 等。
+Server 来访问七牛云存储、智能多媒体服务等。
 
-关于存储详细情况请参考 [基于 MCP 使用大模型访问对象存储 Kodo](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
+关于访问七牛云存储详细情况请参考 [基于 MCP 使用大模型访问七牛云存储](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
 
 ## 前置要求
 
