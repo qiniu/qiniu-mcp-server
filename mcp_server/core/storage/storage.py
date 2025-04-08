@@ -11,7 +11,7 @@ from ...consts import consts
 logger = logging.getLogger(consts.LOGGER_NAME)
 
 
-class Storage:
+class StorageService:
     """
     S3 Resource provider that handles interactions with AWS S3 buckets.
     Part of a collection of resource providers (S3, DynamoDB, etc.) for the MCP server.

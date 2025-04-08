@@ -3,14 +3,14 @@ import logging
 
 from mcp import types
 
-from .storage import Storage
+from .storage import StorageService
 from ...consts import consts
 from ...resource import resource
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
 class _ResourceProvider(resource.ResourceProvider):
-    def __init__(self, storage: Storage):
+    def __init__(self, storage: StorageService):
         super().__init__("s3")
         self.storage = storage
 
@@ -114,6 +114,6 @@ class _ResourceProvider(resource.ResourceProvider):
         return file_content
 
 
-def register_resource_provider(storage: Storage):
+def register_resource_provider(storage: StorageService):
     resource_provider = _ResourceProvider(storage)
     resource.register_resource_provider(resource_provider)

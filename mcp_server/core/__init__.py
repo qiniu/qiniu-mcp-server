@@ -1,11 +1,14 @@
-
-from .storage import loader as storage_loader
+from .storage import load as load_storage
 from ..config import config
+from .cdn import load as load_cdn
 
 
 def load():
     # 加载配置
-    _conf = config.load_config()
+    cfg = config.load_config()
 
     # 存储业务
-    storage_loader.load(_conf)
+    load_storage(cfg)
+
+    # CDN
+    load_cdn(cfg)
