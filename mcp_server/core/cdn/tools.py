@@ -14,12 +14,13 @@ def _buildBaseList(
     requestId: Optional[str],
 ) -> List[str]:
     rets = []
-    if code is not None:
-        rets.append(f"Error code: {code}")
-    if error is not None:
-        rets.append(f"Error message: {error}")
-    if requestId is not None:
+    if code:
+        rets.append(f"Status Code: {code}")
+    if error:
+        rets.append(f"Message: {error}")
+    if requestId:
         rets.append(f"RequestID: {requestId}")
+    return rets
 
 
 class _ToolImpl:
@@ -28,8 +29,8 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="CDN_PrefetchUrls",
-            description="文件预取，用户的新增资源提前由CDN拉取到CDN缓存节点上；用户直接提交资源的URL，CDN自动执行预取操作",
+            name="CDNPrefetchUrls",
+            description="CDN文件预取，用户的新增资源提前由CDN拉取到CDN缓存节点上；用户直接提交资源的URL，CDN自动执行预取操作",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -46,12 +47,13 @@ class _ToolImpl:
         ret = self._cdn.prefetch_urls(**kwargs)
 
         rets = _buildBaseList(ret.code, ret.error, ret.requestId)
-        if ret.invalidUrls is not None:
+        if ret.invalidUrls:
             rets.append(f"Invalid url list: {ret.invalidUrls}")
-        if ret.quotaDay is not None:
-            rets.append(f"每日的预取 url 限额: {ret.quotaDay}")
-        if ret.surplusDay is not None:
-            rets.append(f"每日的当前剩余的预取 url 限额: {ret.surplusDay}")
+        if ret.code // 100 == 2:
+            if ret.quotaDay is not None:
+                rets.append(f"每日的预取 url 限额: {ret.quotaDay}")
+            if ret.surplusDay is not None:
+                rets.append(f"每日的当前剩余的预取 url 限额: {ret.surplusDay}")
 
         return [
             types.TextContent(
@@ -62,8 +64,8 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="CDN_Refresh",
-            description="缓存刷新，用于将用户已经缓存在CDN节点上的资源设置为过期状态，当用于再次访问时CDN节点将回源拉取源站资源并重新缓存在CDN节点上。用户可以提交一个或多个具体的资源文件的URL，也可以提交一个或多个目录前缀的URL",
+            name="CDNRefresh",
+            description="CDN缓存刷新，用于将用户已经缓存在CDN节点上的资源设置为过期状态，当用于再次访问时CDN节点将回源拉取源站资源并重新缓存在CDN节点上。用户可以提交一个或多个具体的资源文件的URL，也可以提交一个或多个目录前缀的URL",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -76,7 +78,6 @@ class _ToolImpl:
                         "items": {"type": "string"},
                     },
                 },
-                "required": ["urls", "dirs"],
             },
         )
     )
@@ -84,19 +85,22 @@ class _ToolImpl:
         ret = self._cdn.refresh(**kwargs)
         rets = _buildBaseList(ret.code, ret.error, ret.requestId)
         if ret.taskIds is not None:
+            # 这个可能暂时用不到
             pass
-        if ret.invalidUrls is not None:
+        if ret.invalidUrls:
             rets.append(f"Invalid url list: {ret.invalidUrls}")
-        if ret.invalidDirs is not None:
+        if ret.invalidDirs:
             rets.append(f"Invalid dir list: {ret.invalidDirs}")
-        if ret.urlQuotaDay is not None:
-            rets.append(f"每日的刷新url限额: {ret.urlQuotaDay}")
-        if ret.urlSurplusDay is not None:
-            rets.append(f"每日的当前剩余的刷新url限额: {ret.urlSurplusDay}")
-        if ret.dirQuotaDay is not None:
-            rets.append(f"每日的刷新dir限额: {ret.dirQuotaDay}")
-        if ret.dirSurplusDay is not None:
-            rets.append(f"每日的当前剩余的刷新dir限额: {ret.dirSurplusDay}")
+
+        if ret.code // 100 == 2:
+            if ret.urlQuotaDay is not None:
+                rets.append(f"每日的刷新url限额: {ret.urlQuotaDay}")
+            if ret.urlSurplusDay is not None:
+                rets.append(f"每日的当前剩余的刷新url限额: {ret.urlSurplusDay}")
+            if ret.dirQuotaDay is not None:
+                rets.append(f"每日的刷新dir限额: {ret.dirQuotaDay}")
+            if ret.dirSurplusDay is not None:
+                rets.append(f"每日的当前剩余的刷新dir限额: {ret.dirSurplusDay}")
         return [
             types.TextContent(
                 type="text",

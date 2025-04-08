@@ -48,7 +48,6 @@ def register_tool(
         func=func,
         async_func=async_func,
     )
-    print(entry)
     _all_tools[name] = entry
 
 
@@ -56,14 +55,18 @@ def tool_meta(meta: types.Tool):
     def _add_metadata(**kwargs):
         def decorator(func):
             if inspect.iscoroutinefunction(func):
+
                 @functools.wraps(func)
                 async def async_wrapper(*args, **kwargs_func):
                     return await func(*args, **kwargs_func)
+
                 wrapper = async_wrapper
             else:
+
                 @functools.wraps(func)
                 def sync_wrapper(*args, **kwargs_func):
                     return func(*args, **kwargs_func)
+
                 wrapper = sync_wrapper
             for key, value in kwargs.items():
                 setattr(wrapper, key, value)
@@ -98,8 +101,7 @@ async def call_tool(name: str, arguments: dict) -> ToolResult:
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
                 executor=None,  # 使用全局线程池
-                func=tool_entry.func,
-                **arguments,
+                func=lambda: tool_entry.func(**arguments),
             )
             return result
         else:
