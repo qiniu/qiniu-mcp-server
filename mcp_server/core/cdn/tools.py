@@ -73,11 +73,12 @@ class _ToolImpl:
                         "type": "array",
                         "items": {"type": "string", "format": "uri"},
                     },
-                    "dirs": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                    },
+                    "dirs": {"type": "array", "items": {"type": "string"}},
                 },
+                "anyOf": [
+                    {"required": ["urls"], "properties": {"urls": {"minItems": 1}}},
+                    {"required": ["dirs"], "properties": {"dirs": {"minItems": 1}}},
+                ],
             },
         )
     )

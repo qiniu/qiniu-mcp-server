@@ -45,6 +45,8 @@ class CDNService:
         return PrefetchUrlsResult.model_validate(info)
 
     def refresh(self, urls: List[str] = [], dirs: List[str] = []) -> RefreshResult:
+        if len(urls) == 0 and len(dirs) == 0:
+            raise ValueError("urls and dirs cannot be empty")
         info, _ = self._cdn_manager.refresh_urls_and_dirs(urls, dirs)
         return RefreshResult.model_validate(info)
 
