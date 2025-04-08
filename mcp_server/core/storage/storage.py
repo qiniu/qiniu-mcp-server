@@ -1,9 +1,11 @@
 import aioboto3
 import asyncio
 import logging
+import qiniu
 
 from typing import List, Dict, Any, Optional
 from botocore.config import Config as S3Config
+from pydantic.v1.schema import schema
 
 from ...config import config
 from ...consts import consts
@@ -32,7 +34,43 @@ class StorageService:
             max_pool_connections=50,
         )
         self.config = cfg
-        self.session = aioboto3.Session()
+        self.s3_session = aioboto3.Session()
+        self.auth = qiniu.Auth(cfg.access_key, cfg.secret_key)
+        self.bucket_manager = qiniu.BucketManager(self.auth, preferred_scheme='https')
+
+    def get_object_url(self, bucket: str, key: str, disable_ssl: bool = False, expires: int = 3600) -> list[str]:
+        """
+        获取对象
+        :param disable_ssl:
+        :param bucket:
+        :param key:
+        :param expires:
+        :return: dict
+            返回对象信息
+        """
+        # 获取下载域名
+        domains_list, domain_response = self.bucket_manager.bucket_domain(bucket)
+        if domain_response.status_code != 200:
+            raise Exception(f"get bucket domain error：{domain_response.exception} reqId:{domain_response.req_id}")
+
+        if not domains_list or len(domains_list) == 0:
+            raise Exception(f"get bucket domain error：domains_list is empty reqId:{domain_response.req_id}")
+
+        http_schema = "https" if not disable_ssl else "http"
+        object_public_urls = {f"{http_schema}://{url}/{key}" for url in domains_list}
+
+        object_urls = []
+        bucket_info, bucket_info_response = self.bucket_manager.bucket_info(bucket)
+        if domain_response.status_code != 200:
+            raise Exception(
+                f"get bucket domain error：{bucket_info_response.exception} reqId:{bucket_info_response.req_id}")
+        if bucket_info['private'] != 0:
+            for url in object_public_urls:
+                object_urls.append(self.auth.private_download_url(url, expires=expires))
+        else:
+            for url in object_public_urls:
+                object_urls.append(url)
+        return object_urls
 
     async def list_buckets(self, prefix: Optional[str] = None) -> List[dict]:
         """
@@ -40,11 +78,11 @@ class StorageService:
         """
         max_buckets = 50
 
-        async with self.session.client('s3',
-                                       aws_access_key_id=self.config.access_key,
-                                       aws_secret_access_key=self.config.secret_key,
-                                       endpoint_url=self.config.endpoint_url,
-                                       region_name=self.config.region_name) as s3:
+        async with self.s3_session.client('s3',
+                                          aws_access_key_id=self.config.access_key,
+                                          aws_secret_access_key=self.config.secret_key,
+                                          endpoint_url=self.config.endpoint_url,
+                                          region_name=self.config.region_name) as s3:
             if self.config.buckets:
                 # If buckets are configured, only return those
                 response = await s3.list_buckets()
@@ -93,11 +131,11 @@ class StorageService:
         if max_keys > 100:
             max_keys = 100
 
-        async with self.session.client('s3',
-                                       aws_access_key_id=self.config.access_key,
-                                       aws_secret_access_key=self.config.secret_key,
-                                       endpoint_url=self.config.endpoint_url,
-                                       region_name=self.config.region_name) as s3:
+        async with self.s3_session.client('s3',
+                                          aws_access_key_id=self.config.access_key,
+                                          aws_secret_access_key=self.config.secret_key,
+                                          endpoint_url=self.config.endpoint_url,
+                                          region_name=self.config.region_name) as s3:
             response = await s3.list_objects_v2(
                 Bucket=bucket,
                 Prefix=prefix,
@@ -120,12 +158,12 @@ class StorageService:
 
         while attempt < max_retries:
             try:
-                async with self.session.client('s3',
-                                               aws_access_key_id=self.config.access_key,
-                                               aws_secret_access_key=self.config.secret_key,
-                                               endpoint_url=self.config.endpoint_url,
-                                               region_name=self.config.region_name,
-                                               config=self.s3_config) as s3:
+                async with self.s3_session.client('s3',
+                                                  aws_access_key_id=self.config.access_key,
+                                                  aws_secret_access_key=self.config.secret_key,
+                                                  endpoint_url=self.config.endpoint_url,
+                                                  region_name=self.config.region_name,
+                                                  config=self.s3_config) as s3:
 
                     # Get the object and its stream
                     response = await s3.get_object(Bucket=bucket, Key=key)
