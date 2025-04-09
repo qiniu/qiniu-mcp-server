@@ -125,11 +125,11 @@ class _ToolImpl:
                         "description": "Key of the object to get. Length Constraints: Minimum length of 1.",
                     },
                     "disable_ssl": {
-                        "type": "bool",
+                        "type": "boolean",
                         "description": "是否禁用 SSL，默认不禁用使用 HTTP 协议，禁用后使用 HTTP 协议",
                     },
                     "expires": {
-                        "type": "int",
+                        "type": "integer",
                         "description": "下载链接中 Token 有效期，单位是秒；当空间是私有空间时，访问文件对象时需要对文件链接签名 Token，公有空间不签 Token。",
                     },
                 },

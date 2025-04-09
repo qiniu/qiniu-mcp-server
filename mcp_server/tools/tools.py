@@ -2,10 +2,11 @@ import functools
 import inspect
 import asyncio
 import logging
+import fastjsonschema
+
 from typing import List, Dict, Callable, Optional, Union, Awaitable
 from dataclasses import dataclass
 from mcp import types
-
 from mcp_server import consts
 
 logger = logging.getLogger(consts.LOGGER_NAME)
@@ -20,6 +21,7 @@ class _ToolEntry:
     meta: types.Tool
     func: Optional[ToolFunc]
     async_func: Optional[AsyncToolFunc]
+    input_validator: Optional[Callable[..., None]]
 
 
 # 初始化全局工具字典
@@ -52,6 +54,7 @@ def register_tool(
         meta=meta,
         func=func,
         async_func=async_func,
+        input_validator=fastjsonschema.compile(meta.inputSchema),
     )
     _all_tools[name] = entry
 
@@ -62,15 +65,15 @@ def tool_meta(meta: types.Tool):
             if inspect.iscoroutinefunction(func):
 
                 @functools.wraps(func)
-                async def async_wrapper(*args, **kwargs_func):
-                    return await func(*args, **kwargs_func)
+                async def async_wrapper(*args, **kwargs):
+                    return await func(*args, **kwargs)
 
                 wrapper = async_wrapper
             else:
 
                 @functools.wraps(func)
-                def sync_wrapper(*args, **kwargs_func):
-                    return func(*args, **kwargs_func)
+                def sync_wrapper(*args, **kwargs):
+                    return func(*args, **kwargs)
 
                 wrapper = sync_wrapper
             for key, value in kwargs.items():
@@ -94,8 +97,16 @@ def auto_register_tools(func_list: Union[ToolFunc, AsyncToolFunc]):
 
 async def call_tool(name: str, arguments: dict) -> ToolResult:
     """执行工具并处理异常"""
+
+    # 工具存在性校验
     if (tool_entry := _all_tools.get(name)) is None:
         raise ValueError(f"Tool {name} not found")
+
+    # 工具输入参数校验
+    try:
+        tool_entry.input_validator(arguments)
+    except fastjsonschema.JsonSchemaException as e:
+        raise ValueError(f"Invalid arguments for tool {name}: {e}")
 
     try:
         if tool_entry.async_func is not None:
