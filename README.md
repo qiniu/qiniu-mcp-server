@@ -138,6 +138,8 @@ npx @modelcontextprotocol/inspector uv --directory . run qiniu-mcp-server
     - 列举 qiniu 中所有的 bucket
     - 列举 qiniu 中 xxx bucket 的文件
     - 读取 qiniu xxx bucket 中 yyy 的文件内容
+    - 对 qiniu xxx bucket 中 yyy 的图片切个宽200像素的圆角
+    - 刷新下 qiniu 的这个 cdn 链接：https://developer.qiniu.com/test.txt
 
 
 

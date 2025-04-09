@@ -35,8 +35,8 @@ class StorageService:
         self.bucket_manager = qiniu.BucketManager(self.auth, preferred_scheme="https")
 
     def get_object_url(
-        self, bucket: str, key: str, disable_ssl: bool = False, expires: int = 3600
-    ) -> list[str]:
+            self, bucket: str, key: str, disable_ssl: bool = False, expires: int = 3600
+    ) -> list[dict[str:Any]]:
         """
         获取对象
         :param disable_ssl:
@@ -47,7 +47,8 @@ class StorageService:
             返回对象信息
         """
         # 获取下载域名
-        domains_list, domain_response = self.bucket_manager.bucket_domain(bucket)
+        domains_getter = getattr(self.bucket_manager, "_BucketManager__uc_do_with_retrier")
+        domains_list, domain_response = domains_getter('/v3/domains?tbl={0}'.format(bucket))
         if domain_response.status_code != 200:
             raise Exception(
                 f"get bucket domain error：{domain_response.exception} reqId:{domain_response.req_id}"
@@ -59,7 +60,21 @@ class StorageService:
             )
 
         http_schema = "https" if not disable_ssl else "http"
-        object_public_urls = {f"{http_schema}://{url}/{key}" for url in domains_list}
+        object_public_urls = []
+        for domain in domains_list:
+            # 被冻结
+            freeze_types = domain.get("freeze_types")
+            if freeze_types is not None:
+                continue
+
+            domain_url = domain.get("domain")
+            if domain_url is None:
+                continue
+
+            object_public_urls.append({
+                "object_url": f"{http_schema}://{domain_url}/{key}",
+                "domain_type": "cdn" if domain.get("domaintype") is None or domain.get("domaintype") == 0 else "origin"
+            })
 
         object_urls = []
         bucket_info, bucket_info_response = self.bucket_manager.bucket_info(bucket)
@@ -68,11 +83,15 @@ class StorageService:
                 f"get bucket domain error：{bucket_info_response.exception} reqId:{bucket_info_response.req_id}"
             )
         if bucket_info["private"] != 0:
-            for url in object_public_urls:
-                object_urls.append(self.auth.private_download_url(url, expires=expires))
+            for url_info in object_public_urls:
+                public_url = url_info.get("object_url")
+                if public_url is None:
+                    continue
+                url_info["object_url"] = self.auth.private_download_url(public_url, expires=expires)
+                object_urls.append(url_info)
         else:
-            for url in object_public_urls:
-                object_urls.append(url)
+            for url_info in object_public_urls:
+                object_urls.append(url_info)
         return object_urls
 
     async def list_buckets(self, prefix: Optional[str] = None) -> List[dict]:
@@ -82,11 +101,11 @@ class StorageService:
         max_buckets = 50
 
         async with self.s3_session.client(
-            "s3",
-            aws_access_key_id=self.config.access_key,
-            aws_secret_access_key=self.config.secret_key,
-            endpoint_url=self.config.endpoint_url,
-            region_name=self.config.region_name,
+                "s3",
+                aws_access_key_id=self.config.access_key,
+                aws_secret_access_key=self.config.secret_key,
+                endpoint_url=self.config.endpoint_url,
+                region_name=self.config.region_name,
         ) as s3:
             if self.config.buckets:
                 # If buckets are configured, only return those
@@ -116,7 +135,7 @@ class StorageService:
                 return buckets[:max_buckets]
 
     async def list_objects(
-        self, bucket: str, prefix: str = "", max_keys: int = 20, start_after: str = ""
+            self, bucket: str, prefix: str = "", max_keys: int = 20, start_after: str = ""
     ) -> List[dict]:
         """
         List objects in a specific bucket using async client with pagination
@@ -138,11 +157,11 @@ class StorageService:
             max_keys = 100
 
         async with self.s3_session.client(
-            "s3",
-            aws_access_key_id=self.config.access_key,
-            aws_secret_access_key=self.config.secret_key,
-            endpoint_url=self.config.endpoint_url,
-            region_name=self.config.region_name,
+                "s3",
+                aws_access_key_id=self.config.access_key,
+                aws_secret_access_key=self.config.secret_key,
+                endpoint_url=self.config.endpoint_url,
+                region_name=self.config.region_name,
         ) as s3:
             response = await s3.list_objects_v2(
                 Bucket=bucket,
@@ -153,7 +172,7 @@ class StorageService:
             return response.get("Contents", [])
 
     async def get_object(
-        self, bucket: str, key: str, max_retries: int = 3
+            self, bucket: str, key: str, max_retries: int = 3
     ) -> Dict[str, Any]:
         """
         Get object from S3 using streaming to handle large files and PDFs reliably.
@@ -169,12 +188,12 @@ class StorageService:
         while attempt < max_retries:
             try:
                 async with self.s3_session.client(
-                    "s3",
-                    aws_access_key_id=self.config.access_key,
-                    aws_secret_access_key=self.config.secret_key,
-                    endpoint_url=self.config.endpoint_url,
-                    region_name=self.config.region_name,
-                    config=self.s3_config,
+                        "s3",
+                        aws_access_key_id=self.config.access_key,
+                        aws_secret_access_key=self.config.secret_key,
+                        endpoint_url=self.config.endpoint_url,
+                        region_name=self.config.region_name,
+                        config=self.s3_config,
                 ) as s3:
                     # Get the object and its stream
                     response = await s3.get_object(Bucket=bucket, Key=key)
@@ -196,7 +215,7 @@ class StorageService:
 
                 attempt += 1
                 if attempt < max_retries:
-                    wait_time = 2**attempt
+                    wait_time = 2 ** attempt
                     logger.warning(
                         f"Attempt {attempt} failed, retrying in {wait_time} seconds: {str(e)}"
                     )
