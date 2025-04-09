@@ -83,15 +83,14 @@ uv --directory . run qiniu-mcp-server --transport sse --port 8000
 ## 开发
 
 扩展功能，首先在 core 目录下新增一个业务目录（eg: 存储 -> storage），在此业务目录下完成功能拓展。
-在业务目录下新建一个 `loader.py` 文件，在此文件中定义 load 函数用于注册业务工具或者资源，最后在 `core` 目录下的 `__init__.py`
+在业务包目录下的 `__init__.py` 文件中定义 load 函数用于注册业务工具或者资源，最后在 `core` 目录下的 `__init__.py`
 中调用此 load 函数完成工具和资源的注册。
 
 ```shell
 core
 ├── __init__.py # 各个业务工具或者资源加载
 └── storage # 存储业务目录
-    ├── __init__.py
-    ├── loader.py  # 加载存储工具或者资源
+    ├── __init__.py # 加载存储工具或者资源
     ├── resource.py # 存储资源扩展
     ├── storage.py # 存储工具类
     └── tools.py # 存储工具扩展
