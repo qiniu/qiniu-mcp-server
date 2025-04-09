@@ -8,6 +8,9 @@ def load():
     # 加载配置
     cfg = config.load_config()
 
-    load_storage(cfg)  # 存储业务
-    load_cdn(cfg)  # CDN
-    load_media_processing(cfg)  # dora
+    # 存储业务
+    load_storage(cfg)
+    # CDN
+    load_cdn(cfg)
+    # 智能多媒体
+    load_media_processing(cfg)

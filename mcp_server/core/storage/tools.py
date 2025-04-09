@@ -2,6 +2,8 @@ import logging
 import base64
 
 from mcp import types
+from mcp.types import ImageContent, TextContent
+
 from .storage import StorageService
 from ...consts import consts
 from ...tools import tools
@@ -85,7 +87,7 @@ class _ToolImpl:
             },
         )
     )
-    async def get_object(self, **kwargs) -> list[types.TextContent]:
+    async def get_object(self, **kwargs) -> list[ImageContent] | list[TextContent]:
         response = await self.storage.get_object(**kwargs)
         file_content = response["Body"]
         content_type = response.get("ContentType", "application/octet-stream")
