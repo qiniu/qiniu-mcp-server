@@ -19,13 +19,12 @@ logger = logging.getLogger(consts.LOGGER_NAME)
 core.load()
 server = Server("mcp-simple-resource")
 
+
 @server.set_logging_level()
 async def set_logging_level(level: LoggingLevel) -> EmptyResult:
     logger.setLevel(level.lower())
     await server.request_context.session.send_log_message(
-        level="warning",
-        data=f"Log level set to {level}",
-        logger="mcp_s3_server"
+        level="warning", data=f"Log level set to {level}", logger="mcp_s3_server"
     )
     return EmptyResult()
 
@@ -38,14 +37,9 @@ async def list_resources(**kwargs) -> list[types.Resource]:
             resource_list.append(result)
     return resource_list
 
+
 @server.read_resource()
 async def read_resource(uri: AnyUrl) -> str:
-    """
-    Read content from an S3 resource and return structured response
-
-    Returns:
-        Dict containing 'contents' list with uri, mimeType, and text for each resource
-    """
     return await resource.read_resource(uri)
 
 
@@ -55,7 +49,5 @@ async def handle_list_tools() -> list[Tool]:
 
 
 @server.call_tool()
-async def fetch_tool(
-        name: str, arguments: dict
-) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-    return await tools.fetch_tool(name, arguments)
+async def call_tool(name: str, arguments: dict):
+    return await tools.call_tool(name, arguments)
