@@ -1,9 +1,14 @@
 import functools
 import inspect
 import asyncio
+import logging
 from typing import List, Dict, Callable, Optional, Union, Awaitable
 from dataclasses import dataclass
 from mcp import types
+
+from mcp_server import consts
+
+logger = logging.getLogger(consts.LOGGER_NAME)
 
 ToolResult = list[types.TextContent | types.ImageContent | types.EmbeddedResource]
 ToolFunc = Callable[..., ToolResult]
@@ -96,6 +101,7 @@ async def call_tool(name: str, arguments: dict) -> ToolResult:
         if tool_entry.async_func is not None:
             # 异步函数直接执行
             result = await tool_entry.async_func(**arguments)
+            return result
         elif tool_entry.func is not None:
             # 同步函数需要到线程池中转化为异步函数执行
             loop = asyncio.get_event_loop()
