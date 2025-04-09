@@ -37,7 +37,7 @@ def main(port: int, transport: str) -> int:
 
         async def handle_sse(request):
             async with sse.connect_sse(
-                    request.scope, request.receive, request._send
+                request.scope, request.receive, request._send
             ) as streams:
                 await app.run(
                     streams[0], streams[1], app.create_initialization_options()

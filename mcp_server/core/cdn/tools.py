@@ -8,18 +8,18 @@ from typing import Optional, List
 logger = logging.getLogger(consts.LOGGER_NAME)
 
 
-def _buildBaseList(
+def _build_base_list(
     code: Optional[int],
     error: Optional[str],
-    requestId: Optional[str],
+    request_id: Optional[str],
 ) -> List[str]:
     rets = []
     if code:
         rets.append(f"Status Code: {code}")
     if error:
         rets.append(f"Message: {error}")
-    if requestId:
-        rets.append(f"RequestID: {requestId}")
+    if request_id:
+        rets.append(f"RequestID: {request_id}")
     return rets
 
 
@@ -58,7 +58,7 @@ class _ToolImpl:
     def prefetch_urls(self, **kwargs) -> list[types.TextContent]:
         ret = self._cdn.prefetch_urls(**kwargs)
 
-        rets = _buildBaseList(ret.code, ret.error, ret.requestId)
+        rets = _build_base_list(ret.code, ret.error, ret.requestId)
         if ret.invalidUrls:
             rets.append(f"Invalid URLs: {ret.invalidUrls}")
         if ret.code // 100 == 2:
@@ -122,7 +122,7 @@ class _ToolImpl:
     )
     def refresh(self, **kwargs) -> list[types.TextContent]:
         ret = self._cdn.refresh(**kwargs)
-        rets = _buildBaseList(ret.code, ret.error, ret.requestId)
+        rets = _build_base_list(ret.code, ret.error, ret.requestId)
         if ret.taskIds is not None:
             # 这个可能暂时用不到
             pass

@@ -10,5 +10,4 @@ def load(cfg: config.Config):
     register_resource_provider(storage)
 
 
-
 __all__ = ["load"]

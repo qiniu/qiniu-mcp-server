@@ -1,7 +1,7 @@
 import logging
+import base64
 
 from mcp import types
-
 from .storage import StorageService
 from ...consts import consts
 from ...tools import tools
@@ -10,7 +10,6 @@ logger = logging.getLogger(consts.LOGGER_NAME)
 
 
 class _ToolImpl:
-
     def __init__(self, storage: StorageService):
         self.storage = storage
 
@@ -93,21 +92,18 @@ class _ToolImpl:
 
         # 根据内容类型返回不同的响应
         if content_type.startswith("image/"):
-            # 图片类型，需要转换为 base64
-            import base64
-
             base64_data = base64.b64encode(file_content).decode("utf-8")
             return [
                 types.ImageContent(
                     type="image", data=base64_data, mimeType=content_type
                 )
             ]
+
+        if isinstance(file_content, bytes):
+            text_content = file_content.decode("utf-8")
         else:
-            if isinstance(file_content, bytes):
-                text_content = file_content.decode("utf-8")
-            else:
-                text_content = str(file_content)
-            return [types.TextContent(type="text", text=text_content)]
+            text_content = str(file_content)
+        return [types.TextContent(type="text", text=text_content)]
 
     @tools.tool_meta(
         types.Tool(

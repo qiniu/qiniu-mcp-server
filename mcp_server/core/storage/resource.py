@@ -9,12 +9,15 @@ from ...resource import resource
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
+
 class _ResourceProvider(resource.ResourceProvider):
     def __init__(self, storage: StorageService):
         super().__init__("s3")
         self.storage = storage
 
-    async def list_resources(self, prefix: str = "", max_keys: int = 20, **kwargs) -> list[types.Resource]:
+    async def list_resources(
+        self, prefix: str = "", max_keys: int = 20, **kwargs
+    ) -> list[types.Resource]:
         """
         List S3 buckets and their contents as resources with pagination
         Args:
@@ -31,16 +34,18 @@ class _ResourceProvider(resource.ResourceProvider):
 
             # limit concurrent operations
             async def process_bucket(bucket):
-                bucket_name = bucket['Name']
+                bucket_name = bucket["Name"]
                 logger.debug(f"Processing bucket: {bucket_name}")
 
                 try:
                     # List objects in the bucket with a reasonable limit
-                    objects = await self.storage.list_objects(bucket_name, max_keys=max_keys)
+                    objects = await self.storage.list_objects(
+                        bucket_name, max_keys=max_keys
+                    )
 
                     for obj in objects:
-                        if 'Key' in obj and not obj['Key'].endswith('/'):
-                            object_key = obj['Key']
+                        if "Key" in obj and not obj["Key"].endswith("/"):
+                            object_key = obj["Key"]
                             if self.storage.is_markdown_file(object_key):
                                 mime_type = "text/markdown"
                             elif self.storage.is_image_file(object_key):
@@ -52,13 +57,15 @@ class _ResourceProvider(resource.ResourceProvider):
                                 uri=f"s3://{bucket_name}/{object_key}",
                                 name=object_key,
                                 mimeType=mime_type,
-                                description=str(obj)
+                                description=str(obj),
                             )
                             resources.append(resource_entry)
                             logger.debug(f"Added resource: {resource_entry.uri}")
 
                 except Exception as e:
-                    logger.error(f"Error listing objects in bucket {bucket_name}: {str(e)}")
+                    logger.error(
+                        f"Error listing objects in bucket {bucket_name}: {str(e)}"
+                    )
 
             # Use semaphore to limit concurrent bucket processing
             semaphore = asyncio.Semaphore(3)  # Limit concurrent bucket processing
@@ -68,7 +75,9 @@ class _ResourceProvider(resource.ResourceProvider):
                     await process_bucket(bucket)
 
             # Process buckets concurrently
-            await asyncio.gather(*[process_bucket_with_semaphore(bucket) for bucket in buckets])
+            await asyncio.gather(
+                *[process_bucket_with_semaphore(bucket) for bucket in buckets]
+            )
 
         except Exception as e:
             logger.error(f"Error listing buckets: {str(e)}")
@@ -79,11 +88,11 @@ class _ResourceProvider(resource.ResourceProvider):
 
     async def read_resource(self, uri: types.AnyUrl, **kwargs) -> str:
         """
-            Read content from an S3 resource and return structured response
+        Read content from an S3 resource and return structured response
 
-            Returns:
-                Dict containing 'contents' list with uri, mimeType, and text for each resource
-            """
+        Returns:
+            Dict containing 'contents' list with uri, mimeType, and text for each resource
+        """
         uri_str = str(uri)
         logger.debug(f"Reading resource: {uri_str}")
 
@@ -92,6 +101,7 @@ class _ResourceProvider(resource.ResourceProvider):
 
         # Parse the S3 URI
         from urllib.parse import unquote
+
         path = uri_str[5:]  # Remove "s3://"
         path = unquote(path)  # Decode URL-encoded characters
         parts = path.split("/", 1)
@@ -103,13 +113,14 @@ class _ResourceProvider(resource.ResourceProvider):
         key = parts[1]
 
         response = await self.storage.get_object(bucket, key)
-        file_content = response['Body']
+        file_content = response["Body"]
 
-        content_type = response.get('ContentType', 'application/octet-stream')
+        content_type = response.get("ContentType", "application/octet-stream")
         # 根据内容类型返回不同的响应
-        if content_type.startswith('image/'):
+        if content_type.startswith("image/"):
             import base64
-            file_content = base64.b64encode(file_content).decode('utf-8')
+
+            file_content = base64.b64encode(file_content).decode("utf-8")
 
         return file_content
 

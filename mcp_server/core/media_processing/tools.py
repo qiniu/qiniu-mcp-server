@@ -12,7 +12,6 @@ _OBJECT_URL_DESC = "图片的 URL，可以通过 GetObjectURL 工具获取的 UR
 
 
 class _ToolImplement:
-
     def __init__(self, cli: Client):
         self.client = cli
 

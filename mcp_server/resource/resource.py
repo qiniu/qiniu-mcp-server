@@ -9,7 +9,6 @@ logger = logging.getLogger(consts.LOGGER_NAME)
 
 
 class ResourceProvider:
-
     def __init__(self, scheme: str):
         self.scheme = scheme
 
