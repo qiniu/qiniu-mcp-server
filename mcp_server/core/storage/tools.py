@@ -17,7 +17,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ListBuckets",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html
+            name="ListBuckets",
             description="Returns a list of all buckets owned by the authenticated sender of the request. To grant IAM permission to use this operation, you must add the s3:ListAllMyBuckets policy action.",
             inputSchema={
                 "type": "object",
@@ -37,7 +37,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ListObjects",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+            name="ListObjects",
             description="Each request will return some or all (up to 100) objects in the bucket. You can use request parameters as selection criteria to return some objects in the bucket. If you want to continue listing, set start_after to the key of the last file in the last listing result so that you can list new content. To get a list of buckets, see ListBuckets.",
             inputSchema={
                 "type": "object",
@@ -69,7 +69,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="GetObject",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+            name="GetObject",
             description="Retrieves an object from Amazon S3. In the GetObject request, specify the full key name for the object. General purpose buckets - Both the virtual-hosted-style requests and the path-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg, specify the object key name as /photos/2006/February/sample.jpg. For a path-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket, specify the object key name as /examplebucket/photos/2006/February/sample.jpg. Directory buckets - Only virtual-hosted-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket--use1-az5--x-s3, specify the object key name as /photos/2006/February/sample.jpg. Also, when you make requests to this API operation, your requests are sent to the Zonal endpoint. These endpoints support virtual-hosted-style requests in the format https://bucket_name.s3express-az_id.region.amazonaws.com/key-name . Path-style requests are not supported.",
             inputSchema={
                 "type": "object",
@@ -109,8 +109,8 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="GetObjectURL",  # https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
-            description="获取文件下载的 URL",
+            name="GetObjectURL",
+            description="Get the file download URL, and note that the Bucket where the file is located must be bound to a domain name. If using Qiniu's test domain, HTTPS access will not be available, and users need to make adjustments for this themselves.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -124,11 +124,11 @@ class _ToolImpl:
                     },
                     "disable_ssl": {
                         "type": "boolean",
-                        "description": "是否禁用 SSL，默认不禁用使用 HTTP 协议，禁用后使用 HTTP 协议",
+                        "description": "Whether to disable SSL. By default, it is not disabled (HTTP protocol is used). If disabled, the HTTP protocol will be used.",
                     },
                     "expires": {
                         "type": "integer",
-                        "description": "下载链接中 Token 有效期，单位是秒；当空间是私有空间时，访问文件对象时需要对文件链接签名 Token，公有空间不签 Token。",
+                        "description": "Token expiration time (in seconds) for download links. When the bucket is private, a signed Token is required to access file objects. Public buckets do not require Token signing.",
                     },
                 },
                 "required": ["bucket", "key"],
