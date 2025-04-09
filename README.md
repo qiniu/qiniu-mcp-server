@@ -127,6 +127,13 @@ npx @modelcontextprotocol/inspector uv --directory . run qiniu-mcp-server
            "run",
            "qiniu-mcp-server"
          ],
+         "env": { # 此处以环境变量方式填写你的 qiniu mcp server 的配置信息，如果是从插件市场下载，可以通过此方式配置，如果是从本地源码安装，也可以通过上述方式在 .env 文件中配置
+           "QINIU_ACCESS_KEY": "YOUR_ACCESS_KEY",
+           "QINIU_SECRET_KEY": "YOUR_SECRET_KEY",
+           "QINIU_REGION_NAME": "YOUR_REGION_NAME",
+           "QINIU_ENDPOINT_URL": "YOUR_ENDPOINT_URL",
+           "QINIU_BUCKETS": "YOUR_BUCKET_A,YOUR_BUCKET_B"
+        },
          "disabled": false
        }
      }
