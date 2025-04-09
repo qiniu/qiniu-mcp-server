@@ -12,10 +12,11 @@ def url_add_processing_tool(url: str, tool: str) -> str:
     new_url = parse.urlunparse(url_info)
     return str(new_url)
 
+
 def _query_add_processing_tool(query: str, tool: str, tool_prefix: str) -> str:
     queries = query.split("&")
-    if '' in queries:
-        queries.remove('')
+    if "" in queries:
+        queries.remove("")
 
     # query 中不包含任何数据
     if len(queries) == 0:
@@ -37,8 +38,8 @@ def _query_add_processing_tool(query: str, tool: str, tool_prefix: str) -> str:
         return "&".join(queries)
 
     query_tools = first_query.split("|")
-    if '' in query_tools:
-        query_tools.remove('')
+    if "" in query_tools:
+        query_tools.remove("")
 
     # 只有一个 tool，且和当前 tool 相同，拼接气候
     if len(query_tools) == 1:
@@ -59,4 +60,3 @@ def _query_add_processing_tool(query: str, tool: str, tool_prefix: str) -> str:
     tool = first_query + tool.removeprefix(tool_prefix)
     queries.insert(0, tool)
     return "&".join(queries)
-

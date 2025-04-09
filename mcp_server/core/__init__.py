@@ -1,15 +1,13 @@
-
-from .storage import loader as storage_loader
-from .media_processing import loader as media_processing_loader
 from ..config import config
+from .storage import load as load_storage
+from .media_processing import load as load_media_processing
+from .cdn import load as load_cdn
 
 
 def load():
     # 加载配置
-    _conf = config.load_config()
+    cfg = config.load_config()
 
-    # 存储业务
-    storage_loader.load(_conf)
-
-    # dora
-    media_processing_loader.load(_conf)
+    load_storage(cfg)  # 存储业务
+    load_cdn(cfg)  # CDN
+    load_media_processing(cfg)  # dora
