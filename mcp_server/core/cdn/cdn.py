@@ -1,6 +1,7 @@
 import logging
 
 from qiniu import CdnManager, Auth
+from qiniu.http import ResponseInfo
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 from dataclasses import dataclass
@@ -35,19 +36,29 @@ class RefreshResult(BaseModel):
     dirSurplusDay: Optional[int] = None
 
 
+def _raise_if_resp_error(resp: ResponseInfo):
+    if resp.ok():
+        return
+    raise RuntimeError(f"qiniu response error: {str(resp)}")
+
+
 class CDNService:
     def __init__(self, cfg: config.Config):
         auth = Auth(access_key=cfg.access_key, secret_key=cfg.secret_key)
         self._cdn_manager = CdnManager(auth)
 
     def prefetch_urls(self, urls: List[str] = []) -> PrefetchUrlsResult:
-        info, _ = self._cdn_manager.prefetch_urls(urls)
+        if not urls:
+            raise ValueError("urls is empty")
+        info, resp = self._cdn_manager.prefetch_urls(urls)
+        _raise_if_resp_error(resp)
         return PrefetchUrlsResult.model_validate(info)
 
     def refresh(self, urls: List[str] = [], dirs: List[str] = []) -> RefreshResult:
-        if len(urls) == 0 and len(dirs) == 0:
+        if not urls and not dirs:
             raise ValueError("urls and dirs cannot be empty")
-        info, _ = self._cdn_manager.refresh_urls_and_dirs(urls, dirs)
+        info, resp = self._cdn_manager.refresh_urls_and_dirs(urls, dirs)
+        _raise_if_resp_error(resp)
         return RefreshResult.model_validate(info)
 
 

@@ -30,13 +30,25 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="CDNPrefetchUrls",
-            description="CDN文件预取，用户的新增资源提前由CDN拉取到CDN缓存节点上；用户直接提交资源的URL，CDN自动执行预取操作",
+            description="Newly added resources are proactively retrieved by the CDN and stored on its cache nodes in advance. Users simply submit the resource URLs, and the CDN automatically triggers the prefetch process.",
             inputSchema={
                 "type": "object",
+                "additionalProperties": False,
                 "properties": {
                     "urls": {
                         "type": "array",
-                        "items": {"type": "string", "format": "uri"},
+                        "description": "List of individual URLs to prefetch (max 60 items). Must be full URLs with protocol, e.g. 'http://example.com/file.zip'",
+                        "items": {
+                            "type": "string",
+                            "format": "uri",
+                            "pattern": "^https?://",
+                            "examples": [
+                                "https://cdn.example.com/images/photo.jpg",
+                                "http://static.example.com/downloads/app.exe",
+                            ],
+                        },
+                        "maxItems": 60,
+                        "minItems": 1,
                     }
                 },
                 "required": ["urls"],
@@ -48,12 +60,12 @@ class _ToolImpl:
 
         rets = _buildBaseList(ret.code, ret.error, ret.requestId)
         if ret.invalidUrls:
-            rets.append(f"Invalid url list: {ret.invalidUrls}")
+            rets.append(f"Invalid URLs: {ret.invalidUrls}")
         if ret.code // 100 == 2:
             if ret.quotaDay is not None:
-                rets.append(f"每日的预取 url 限额: {ret.quotaDay}")
+                rets.append(f"Today's prefetch quota: {ret.quotaDay}")
             if ret.surplusDay is not None:
-                rets.append(f"每日的当前剩余的预取 url 限额: {ret.surplusDay}")
+                rets.append(f"Today's remaining quota: {ret.surplusDay}")
 
         return [
             types.TextContent(
@@ -65,19 +77,45 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="CDNRefresh",
-            description="CDN缓存刷新，用于将用户已经缓存在CDN节点上的资源设置为过期状态，当用于再次访问时CDN节点将回源拉取源站资源并重新缓存在CDN节点上。用户可以提交一个或多个具体的资源文件的URL，也可以提交一个或多个目录前缀的URL",
+            description="This function marks resources cached on CDN nodes as expired. When users access these resources again, the CDN nodes will fetch the latest version from the origin server and store them anew.",
             inputSchema={
                 "type": "object",
+                "additionalProperties": False,  # 不允许出现未定义的属性
                 "properties": {
                     "urls": {
                         "type": "array",
-                        "items": {"type": "string", "format": "uri"},
+                        "items": {
+                            "type": "string",
+                            "format": "uri",
+                            "pattern": "^https?://",  # 匹配http://或https://开头的URL
+                            "examples": ["http://bar.foo.com/index.html"],
+                        },
+                        "maxItems": 60,
+                        "description": "List of exact URLs to refresh (max 60 items). Must be full URLs with protocol, e.g. 'http://example.com/path/page.html'",
                     },
-                    "dirs": {"type": "array", "items": {"type": "string"}},
+                    "dirs": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "pattern": "^https?://.*/(\\*|$)",  # 匹配以http://或https://开头的URL，并以/或者以/*结尾的字符串
+                            "examples": [
+                                "http://bar.foo.com/dir/",
+                                "http://bar.foo.com/images/*",
+                            ],
+                        },
+                        "maxItems": 10,
+                        "description": "List of directory patterns to refresh (max 10 items). Must end with '/' or '/*' to indicate directory scope",
+                    },
                 },
-                "anyOf": [
-                    {"required": ["urls"], "properties": {"urls": {"minItems": 1}}},
-                    {"required": ["dirs"], "properties": {"dirs": {"minItems": 1}}},
+                "anyOf": [  # 至少有一个是非空数组
+                    {
+                        "required": ["urls"],
+                        "properties": {"urls": {"not": {"maxItems": 0}}},
+                    },
+                    {
+                        "required": ["dirs"],
+                        "properties": {"dirs": {"not": {"maxItems": 0}}},
+                    },
                 ],
             },
         )
@@ -89,19 +127,21 @@ class _ToolImpl:
             # 这个可能暂时用不到
             pass
         if ret.invalidUrls:
-            rets.append(f"Invalid url list: {ret.invalidUrls}")
+            rets.append(f"Invalid URLs list: {ret.invalidUrls}")
         if ret.invalidDirs:
-            rets.append(f"Invalid dir list: {ret.invalidDirs}")
+            rets.append(f"Invalid dirs: {ret.invalidDirs}")
 
         if ret.code // 100 == 2:
             if ret.urlQuotaDay is not None:
-                rets.append(f"每日的刷新url限额: {ret.urlQuotaDay}")
+                rets.append(f"Today's URL refresh quota: {ret.urlQuotaDay}")
             if ret.urlSurplusDay is not None:
-                rets.append(f"每日的当前剩余的刷新url限额: {ret.urlSurplusDay}")
+                rets.append(f"Today's remaining URL refresh quota: {ret.urlSurplusDay}")
             if ret.dirQuotaDay is not None:
-                rets.append(f"每日的刷新dir限额: {ret.dirQuotaDay}")
+                rets.append(f"Today's directory refresh quota: {ret.dirQuotaDay}")
             if ret.dirSurplusDay is not None:
-                rets.append(f"每日的当前剩余的刷新dir限额: {ret.dirSurplusDay}")
+                rets.append(
+                    f"Today's remaining directory refresh quota: {ret.dirSurplusDay}"
+                )
         return [
             types.TextContent(
                 type="text",
