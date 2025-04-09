@@ -1,7 +1,9 @@
 import asyncio
 import logging
+import base64
 
 from mcp import types
+from urllib.parse import unquote
 
 from .storage import StorageService
 from ...consts import consts
@@ -100,8 +102,6 @@ class _ResourceProvider(resource.ResourceProvider):
             raise ValueError("Invalid S3 URI")
 
         # Parse the S3 URI
-        from urllib.parse import unquote
-
         path = uri_str[5:]  # Remove "s3://"
         path = unquote(path)  # Decode URL-encoded characters
         parts = path.split("/", 1)
@@ -118,8 +118,6 @@ class _ResourceProvider(resource.ResourceProvider):
         content_type = response.get("ContentType", "application/octet-stream")
         # 根据内容类型返回不同的响应
         if content_type.startswith("image/"):
-            import base64
-
             file_content = base64.b64encode(file_content).decode("utf-8")
 
         return file_content
