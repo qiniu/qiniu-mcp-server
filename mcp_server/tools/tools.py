@@ -85,7 +85,7 @@ def tool_meta(meta: types.Tool):
     return _add_metadata(tool_meta=meta)
 
 
-def auto_register_tools(func_list: Union[ToolFunc, AsyncToolFunc]):
+def auto_register_tools(func_list: list[Union[ToolFunc, AsyncToolFunc]]):
     """尝试自动注册带有 tool_meta 的工具"""
     for func in func_list:
         if hasattr(func, "tool_meta"):
