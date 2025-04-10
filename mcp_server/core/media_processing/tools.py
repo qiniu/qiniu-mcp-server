@@ -2,7 +2,7 @@ import logging
 from mcp import types
 
 from . import utils
-from .client import Client
+from .processing import MediaProcessingService
 from ...consts import consts
 from ...tools import tools
 
@@ -12,7 +12,7 @@ _OBJECT_URL_DESC = "The URL of the image. This can be a URL obtained via the Get
 
 
 class _ToolImpl:
-    def __init__(self, cli: Client):
+    def __init__(self, cli: MediaProcessingService):
         self.client = cli
 
     @tools.tool_meta(
@@ -259,7 +259,7 @@ class _ToolImpl:
         return [types.TextContent(type="text", text=str(status))]
 
 
-def register_tools(cli: Client):
+def register_tools(cli: MediaProcessingService):
     tool_impl = _ToolImpl(cli)
     tools.auto_register_tools(
         [

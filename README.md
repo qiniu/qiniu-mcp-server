@@ -1,11 +1,15 @@
 # Qiniu MCP Server
 
+## 概述
+
 基于七牛云产品构建的 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP
 Server 来访问七牛云存储、智能多媒体服务等。
 
 关于访问七牛云存储详细情况请参考 [基于 MCP 使用大模型访问七牛云存储](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
 
-## 前置要求
+## 安装
+
+**前置要求**
 
 - Python 3.12 或更高版本
 - uv 包管理器
@@ -15,8 +19,6 @@ Server 来访问七牛云存储、智能多媒体服务等。
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
-
-## 安装
 
 1. 克隆仓库：
 
@@ -82,9 +84,9 @@ uv --directory . run qiniu-mcp-server --transport sse --port 8000
 
 ## 开发
 
-扩展功能，首先在 core 目录下新增一个业务目录（eg: 存储 -> storage），在此业务目录下完成功能拓展。
+扩展功能，首先在 core 目录下新增一个业务包目录（eg: 存储 -> storage），在此业务包目录下完成功能拓展。
 在业务包目录下的 `__init__.py` 文件中定义 load 函数用于注册业务工具或者资源，最后在 `core` 目录下的 `__init__.py`
-中调用此 load 函数完成工具和资源的注册。
+中调用此 load 函数完成工具或资源的注册。
 
 ```shell
 core
@@ -111,11 +113,11 @@ npx @modelcontextprotocol/inspector uv --directory . run qiniu-mcp-server
 
 步骤：
 
-1. 在 vscode 下载 cline 插件（下载后 cline 插件后在侧边栏会增加 cline 的图标）
+1. 在 vscode 下载 Cline 插件（下载后 Cline 插件后在侧边栏会增加 Cline 的图标）
 2. 配置大模型
-3. 配置 qiniu mcp
-    1. 点击 cline 图标进入 cline 插件，选择 mcp server 模块
-    2. 选择 installed，点击 Advanced MCP Settings 配置 mcp server，参考下面配置信息
+3. 配置 qiniu MCP
+    1. 点击 Cline 图标进入 Cline 插件，选择 MCP Server 模块
+    2. 选择 installed，点击 Advanced MCP Settings 配置 MCP Server，参考下面配置信息
    ```
    {
      "mcpServers": {
@@ -139,14 +141,14 @@ npx @modelcontextprotocol/inspector uv --directory . run qiniu-mcp-server
      }
    }
    ```
-    3. 点击 qiniu mcp server 的链接开关进行连接
-4. 在 cline 中创建一个 chat 窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出几个示例：
+    3. 点击 qiniu MCP Server 的链接开关进行连接
+4. 在 Cline 中创建一个聊天窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出几个示例：
     - 列举 qiniu 的资源信息
-    - 列举 qiniu 中所有的 bucket
-    - 列举 qiniu 中 xxx bucket 的文件
-    - 读取 qiniu xxx bucket 中 yyy 的文件内容
-    - 对 qiniu xxx bucket 中 yyy 的图片切个宽200像素的圆角
-    - 刷新下 qiniu 的这个 cdn 链接：https://developer.qiniu.com/test.txt
+    - 列举 qiniu 中所有的 Bucket
+    - 列举 qiniu 中 xxx Bucket 的文件
+    - 读取 qiniu xxx Bucket 中 yyy 的文件内容
+    - 对 qiniu xxx Bucket 中 yyy 的图片切个宽200像素的圆角
+    - 刷新下 qiniu 的这个 CDN 链接：https://developer.qiniu.com/test.txt
 
 
 
