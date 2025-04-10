@@ -3,7 +3,7 @@ import qiniu
 from ...config import config
 
 
-class Client:
+class MediaProcessingService:
     def __init__(self, cfg: config.Config):
         self.cfg = cfg
         self.auth = qiniu.Auth(cfg.access_key, cfg.secret_key)

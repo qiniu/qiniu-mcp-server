@@ -11,7 +11,7 @@ def url_add_processing_func(url: str, func: str) -> str:
 
     url_info = parse.urlparse(url)
     new_query = _query_add_processing_func(url_info.query, func, func_prefix)
-    new_query = parse.quote(new_query, safe="")
+    new_query = parse.quote(new_query, safe='&=')
     url_info = url_info._replace(query=new_query)
     new_url = parse.urlunparse(url_info)
     return str(new_url)
@@ -28,12 +28,18 @@ def _query_add_processing_func(query: str, func: str, func_prefix: str) -> str:
 
     # funcs 会放在第一个元素中
     first_query = parse.unquote(queries[0])
-    queries.remove(queries[0])
 
     # funcs 不存在
     if len(first_query) == 0:
         queries.insert(0, func)
         return "&".join(queries)
+
+    # first_query 有 = 说明不是 funcs
+    if first_query.find("=") >= 0:
+        queries.insert(0, func)
+        return "&".join(queries)
+
+    queries.remove(queries[0])
 
     # 未找到当前类别的 func
     if first_query.find(func_prefix) < 0:
