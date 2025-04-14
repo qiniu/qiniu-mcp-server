@@ -17,14 +17,14 @@ from .tools import tools
 logger = logging.getLogger(consts.LOGGER_NAME)
 
 core.load()
-server = Server("mcp-simple-resource")
+server = Server("qiniu-mcp-server")
 
 
 @server.set_logging_level()
 async def set_logging_level(level: LoggingLevel) -> EmptyResult:
     logger.setLevel(level.lower())
     await server.request_context.session.send_log_message(
-        level="warning", data=f"Log level set to {level}", logger="mcp_s3_server"
+        level="warning", data=f"Log level set to {level}", logger=consts.LOGGER_NAME
     )
     return EmptyResult()
 
