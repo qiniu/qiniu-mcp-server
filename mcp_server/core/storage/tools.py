@@ -10,6 +10,8 @@ from ...tools import tools
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
+_BUCKET_DESC = """When you use this operation with a directory bucket, you must use virtual-hosted-style requests in the format ${bucket_name}.s3.${region_id}.qiniucs.com. Path-style requests are not supported. Directory bucket names must be unique in the chosen Availability Zone.
+"""
 
 class _ToolImpl:
     def __init__(self, storage: StorageService):
@@ -44,7 +46,7 @@ class _ToolImpl:
                 "properties": {
                     "bucket": {
                         "type": "string",
-                        "description": "When you use this operation with a directory bucket, you must use virtual-hosted-style requests in the format Bucket_name.s3express-az_id.region.amazonaws.com. Path-style requests are not supported. Directory bucket names must be unique in the chosen Availability Zone. Bucket names must follow the format bucket_base_name--az-id--x-s3 (for example, DOC-EXAMPLE-BUCKET--usw2-az1--x-s3).",
+                        "description": _BUCKET_DESC,
                     },
                     "max_keys": {
                         "type": "integer",
@@ -70,13 +72,13 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="GetObject",
-            description="Retrieves an object from Amazon S3. In the GetObject request, specify the full key name for the object. General purpose buckets - Both the virtual-hosted-style requests and the path-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg, specify the object key name as /photos/2006/February/sample.jpg. For a path-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket, specify the object key name as /examplebucket/photos/2006/February/sample.jpg. Directory buckets - Only virtual-hosted-style requests are supported. For a virtual hosted-style request example, if you have the object photos/2006/February/sample.jpg in the bucket named examplebucket--use1-az5--x-s3, specify the object key name as /photos/2006/February/sample.jpg. Also, when you make requests to this API operation, your requests are sent to the Zonal endpoint. These endpoints support virtual-hosted-style requests in the format https://bucket_name.s3express-az_id.region.amazonaws.com/key-name . Path-style requests are not supported.",
+            description="Retrieves an object from Qiniu bucket. In the GetObject request, specify the full key name for the object. Path-style requests are not supported.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "bucket": {
                         "type": "string",
-                        "description": "Directory buckets - When you use this operation with a directory bucket, you must use virtual-hosted-style requests in the format Bucket_name.s3express-az_id.region.amazonaws.com. Path-style requests are not supported. Directory bucket names must be unique in the chosen Availability Zone. Bucket names must follow the format bucket_base_name--az-id--x-s3 (for example, DOC-EXAMPLE-BUCKET--usw2-az1--x-s3).",
+                        "description": _BUCKET_DESC,
                     },
                     "key": {
                         "type": "string",
@@ -116,7 +118,7 @@ class _ToolImpl:
                 "properties": {
                     "bucket": {
                         "type": "string",
-                        "description": "Directory buckets - When you use this operation with a directory bucket, you must use virtual-hosted-style requests in the format Bucket_name.s3express-az_id.region.amazonaws.com. Path-style requests are not supported. Directory bucket names must be unique in the chosen Availability Zone. Bucket names must follow the format bucket_base_name--az-id--x-s3 (for example, DOC-EXAMPLE-BUCKET--usw2-az1--x-s3).",
+                        "description": _BUCKET_DESC,
                     },
                     "key": {
                         "type": "string",
