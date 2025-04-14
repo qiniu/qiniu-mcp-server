@@ -1,1 +1,1 @@
-LOGGER_NAME = "qiniu-s3-mcp"
+LOGGER_NAME = "qiniu-mcp"
