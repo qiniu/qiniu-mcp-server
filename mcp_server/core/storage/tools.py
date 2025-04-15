@@ -58,7 +58,7 @@ class _ToolImpl:
                     },
                     "start_after": {
                         "type": "string",
-                        "description": "start_after is where you want Amazon S3 to start listing from. Amazon S3 starts listing after this specified key. start_after can be any key in the bucket.",
+                        "description": "start_after is where you want S3 to start listing from. S3 starts listing after this specified key. start_after can be any key in the bucket.",
                     },
                 },
                 "required": ["bucket"],
