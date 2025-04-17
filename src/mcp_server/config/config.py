@@ -52,10 +52,6 @@ def load_config() -> Config:
         logger.error("QINIU_REGION_NAME is not configured")
         raise ValueError("QINIU_REGION_NAME is not configured")
 
-    if not config.buckets:
-        logger.error("QINIU_BUCKETS is not configured")
-        raise ValueError("QINIU_BUCKETS is not configured")
-
     logger.info(f"Configured   access_key: {config.access_key}")
     logger.info(f"Configured endpoint_url: {config.endpoint_url}")
     logger.info(f"Configured  region_name: {config.region_name}")

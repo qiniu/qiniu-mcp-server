@@ -95,9 +95,9 @@ class StorageService:
         return object_urls
 
     async def list_buckets(self, prefix: Optional[str] = None) -> List[dict]:
-        """
-        List S3 buckets using async client with pagination
-        """
+        if not self.config.buckets or len(self.config.buckets) == 0:
+            return []
+
         max_buckets = 50
 
         async with self.s3_session.client(
@@ -107,32 +107,22 @@ class StorageService:
                 endpoint_url=self.config.endpoint_url,
                 region_name=self.config.region_name,
         ) as s3:
-            if self.config.buckets:
-                # If buckets are configured, only return those
-                response = await s3.list_buckets()
-                all_buckets = response.get("Buckets", [])
+            # If buckets are configured, only return those
+            response = await s3.list_buckets()
+            all_buckets = response.get("Buckets", [])
 
+            configured_bucket_list = [
+                bucket
+                for bucket in all_buckets
+                if bucket["Name"] in self.config.buckets
+            ]
+
+            if prefix:
                 configured_bucket_list = [
-                    bucket
-                    for bucket in all_buckets
-                    if bucket["Name"] in self.config.buckets
+                    b for b in configured_bucket_list if b["Name"] > prefix
                 ]
 
-                if prefix:
-                    configured_bucket_list = [
-                        b for b in configured_bucket_list if b["Name"] > prefix
-                    ]
-
-                return configured_bucket_list[:max_buckets]
-            else:
-                # Default behavior if no buckets configured
-                response = await s3.list_buckets()
-                buckets = response.get("Buckets", [])
-
-                if prefix:
-                    buckets = [b for b in buckets if b["Name"] > prefix]
-
-                return buckets[:max_buckets]
+            return configured_bucket_list[:max_buckets]
 
     async def list_objects(
             self, bucket: str, prefix: str = "", max_keys: int = 20, start_after: str = ""
