@@ -104,6 +104,8 @@ async def call_tool(name: str, arguments: dict) -> ToolResult:
         raise ValueError(f"Tool {name} not found")
 
     # 工具输入参数校验
+    # 把 None 移除否则校验不过
+    arguments = {k: v for k, v in arguments.items() if v is not None}
     try:
         tool_entry.input_validator(arguments)
     except fastjsonschema.JsonSchemaException as e:
