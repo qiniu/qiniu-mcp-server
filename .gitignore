@@ -12,4 +12,4 @@ wheels/
 .env.dora
 .env.kodo
 
-mcp_server/test.py
+src/mcp_server/test.py

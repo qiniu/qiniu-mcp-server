@@ -686,8 +686,8 @@ wheels = [
 ]
 
 [[package]]
-name = "qiniu-mcp"
-version = "0.1.0"
+name = "qiniu-mcp-server"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "aioboto3" },

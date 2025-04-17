@@ -7,7 +7,8 @@ import fastjsonschema
 from typing import List, Dict, Callable, Optional, Union, Awaitable
 from dataclasses import dataclass
 from mcp import types
-from mcp_server import consts
+
+from .. import consts
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
@@ -36,8 +37,8 @@ def all_tools() -> List[types.Tool]:
 
 
 def register_tool(
-    meta: types.Tool,
-    func: Union[ToolFunc, AsyncToolFunc],
+        meta: types.Tool,
+        func: Union[ToolFunc, AsyncToolFunc],
 ) -> None:
     """注册工具，禁止重复名称"""
     name = meta.name
