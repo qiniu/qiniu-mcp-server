@@ -1,0 +1,45 @@
+params:
+  type: object
+  properties:
+    QINIU_ACCESS_KEY:
+      type: string
+      description: The access key for your Qiniu account.
+    QINIU_SECRET_KEY:
+      type: string
+      description: The secret key for your Qiniu account.
+    QINIU_REGION_NAME:
+      type: string
+      description: The region name for your config of Qiniu buckets.
+    QINIU_ENDPOINT_URL:
+      type: string
+      description: The endpoint URL for your config of Qiniu buckets. eg:https://s3.your_region.qiniucs.com.
+    QINIU_BUCKETS:
+      type: string
+      description: The buckets of Qiniu, If there are multiple extra items, separate them with commas. eg:bucket1,bucket2.
+  required:
+    - QINIU_ACCESS_KEY
+    - QINIU_SECRET_KEY
+    - QINIU_REGION_NAME
+    - QINIU_ENDPOINT_URL
+    - QINIU_BUCKETS
+
+uvx:
+  command:
+    | uvx qiniu-mcp-server
+  config:
+    | {
+        "mcpServers": {
+          "qiniu-mcp-server": {
+            "command": "uvx",
+            "args": [
+              "qiniu-mcp-server"
+            ],
+            "env": {
+              "QINIU_ACCESS_KEY": "YOUR QINIU ACCESS KEY",
+              "QINIU_SECRET_KEY": "YOUR QINIU SECRET KEY",
+              "QINIU_REGION_NAME": "YOUR QINIU REGION NAME",
+              "QINIU_ENDPOINT_URL": "YOUR QINIU ENDPOINT URL"
+            }
+          }
+        }
+      }
