@@ -58,6 +58,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 注：
 cursor 中创建 MCP Server 可直接使用上述配置。
+claude 中使用时可能会遇到：Error: spawn uvx ENOENT 错误，解决方案：command 中 参数填写 uvx 的绝对路径，eg: /usr/local/bin/uvx
 
 ## 开发
 1. 克隆仓库：
