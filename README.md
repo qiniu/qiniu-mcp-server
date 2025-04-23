@@ -17,7 +17,8 @@ Server 来访问七牛云存储、智能多媒体服务等。
 # Mac，推荐使用 brew 安装
 brew install uv
 
-# Linux & Mac，安装后注意把安装后的路径加入环境变量 PATH 中，例如在 Mac 中，把安装后的路径 /Users/xxx/.local/bin export PATH="/Users/xxx/.local/bin:$PATH"
+# Linux & Mac，安装后注意把安装的包路径（uv 和 uvx 所保存的路径）加入环境变量 PATH 中，
+# 例如在 Mac 中，把安装的包路径 /Users/xxx/.local/bin 添加到 PATH 中，export PATH="/Users/xxx/.local/bin:$PATH"，长期使用需添加到启动脚本中，例如：$Home/.bash_profile 中
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Windows
