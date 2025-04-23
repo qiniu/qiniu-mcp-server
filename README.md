@@ -13,9 +13,15 @@ Server 来访问七牛云存储、智能多媒体服务等。
 - uv 包管理器
 
 如果还没有安装 uv，可以使用以下命令安装：
+https://docs.astral.sh/uv/getting-started/installation/#pypi
 
 ```bash
+# 给出两个示例：
+# Linux & Mac
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+$ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
 ## 在 Cline 中使用：
