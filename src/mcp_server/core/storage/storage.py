@@ -1,5 +1,4 @@
 import aioboto3
-import asyncio
 import logging
 import qiniu
 
@@ -199,20 +198,44 @@ class StorageService:
                     return response
 
             except Exception as e:
-                last_exception = e
-                if "NoSuchKey" in str(e):
-                    raise
-
-                attempt += 1
-                if attempt < max_retries:
-                    wait_time = 2 ** attempt
-                    logger.warning(
-                        f"Attempt {attempt} failed, retrying in {wait_time} seconds: {str(e)}"
-                    )
-                    await asyncio.sleep(wait_time)
-                continue
+                logger.warning(
+                    f"Attempt {attempt} failed, exception: {str(e)}"
+                )
+                raise e
 
         raise last_exception or Exception("Failed to get object after all retries")
+
+    def upload_text_data(self, bucket: str, key: str, data: str, overwrite: bool = False) -> list[dict[str:Any]]:
+        policy = {
+            "insertOnly": 1,
+        }
+
+        if overwrite:
+            policy["insertOnly"] = 0
+            policy["scope"] = f"{bucket}:{key}"
+
+        token = self.auth.upload_token(bucket=bucket, key=key, policy=policy)
+        ret, info = qiniu.put_data(up_token=token, key=key, data=bytes(data, encoding="utf-8"))
+        if info.status_code != 200:
+            raise Exception(f"Failed to upload object: {info.text}")
+
+        return self.get_object_url(bucket, key)
+
+    def upload_file(self, bucket: str, key: str, file_path: str, overwrite: bool = False) -> list[dict[str:Any]]:
+        policy = {
+            "insertOnly": 1,
+        }
+
+        if overwrite:
+            policy["insertOnly"] = 0
+            policy["scope"] = f"{bucket}:{key}"
+
+        token = self.auth.upload_token(bucket=bucket, key=key, policy=policy)
+        ret, info = qiniu.put_file(up_token=token, key=key, file_path=file_path)
+        if info.status_code != 200:
+            raise Exception(f"Failed to upload object: {info.text}")
+
+        return self.get_object_url(bucket, key)
 
     def is_text_file(self, key: str) -> bool:
         """Determine if a file is text-based by its extension"""

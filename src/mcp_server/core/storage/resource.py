@@ -5,9 +5,12 @@ import base64
 from mcp import types
 from urllib.parse import unquote
 
+from mcp.server.lowlevel.helper_types import ReadResourceContents
+
 from .storage import StorageService
 from ...consts import consts
 from ...resource import resource
+from ...resource.resource import ResourceContents
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
@@ -88,7 +91,7 @@ class _ResourceProvider(resource.ResourceProvider):
         logger.info(f"Returning {len(resources)} resources")
         return resources
 
-    async def read_resource(self, uri: types.AnyUrl, **kwargs) -> str:
+    async def read_resource(self, uri: types.AnyUrl, **kwargs) -> ResourceContents:
         """
         Read content from an S3 resource and return structured response
 
@@ -120,7 +123,7 @@ class _ResourceProvider(resource.ResourceProvider):
         if content_type.startswith("image/"):
             file_content = base64.b64encode(file_content).decode("utf-8")
 
-        return file_content
+        return [ReadResourceContents(mime_type=content_type, content=file_content)]
 
 
 def register_resource_provider(storage: StorageService):

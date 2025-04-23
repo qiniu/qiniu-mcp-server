@@ -1,12 +1,15 @@
 import logging
 from abc import abstractmethod
-from typing import Dict, AsyncGenerator
+from typing import Dict, AsyncGenerator, Iterable
 
 from mcp import types
+from mcp.server.lowlevel.helper_types import ReadResourceContents
+
 from ..consts import consts
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
+ResourceContents = str | bytes | Iterable[ReadResourceContents]
 
 class ResourceProvider:
     def __init__(self, scheme: str):
@@ -17,7 +20,7 @@ class ResourceProvider:
         pass
 
     @abstractmethod
-    async def read_resource(self, uri: types.AnyUrl, **kwargs) -> str:
+    async def read_resource(self, uri: types.AnyUrl, **kwargs) -> ResourceContents:
         pass
 
 
@@ -35,7 +38,7 @@ async def list_resources(**kwargs) -> AsyncGenerator[types.Resource, None]:
     return
 
 
-async def read_resource(uri: types.AnyUrl, **kwargs) -> str:
+async def read_resource(uri: types.AnyUrl, **kwargs) -> ResourceContents:
     if len(_all_resource_providers) == 0:
         return ""
 
@@ -52,6 +55,7 @@ def register_resource_provider(provider: ResourceProvider):
 
 
 __all__ = [
+    "ResourceContents",
     "ResourceProvider",
     "list_resources",
     "read_resource",

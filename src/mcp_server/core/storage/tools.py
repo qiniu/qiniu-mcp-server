@@ -111,6 +111,70 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
+            name="UploadTextData",
+            description="Upload text data to Qiniu bucket. In the UploadData request, specify the full key name for the object. Path-style requests are not supported.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": _BUCKET_DESC,
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "Key of the object to upload. Length Constraints: Minimum length of 1.",
+                    },
+                    "data": {
+                        "type": "string",
+                        "description": "The data to upload.",
+                    },
+                    "overwrite": {
+                        "type": "boolean",
+                        "description": "Whether to overwrite the existing object if it already exists.",
+                    },
+                },
+                "required": ["bucket", "key", "data"],
+            }
+        )
+    )
+    def upload_text_data(self, **kwargs) -> list[types.TextContent]:
+        urls = self.storage.upload_text_data(**kwargs)
+        return [types.TextContent(type="text", text=str(urls))]
+
+    @tools.tool_meta(
+        types.Tool(
+            name="UploadFile",
+            description="Upload file to Qiniu bucket. In the UploadFile request, specify the full key name for the object. Path-style requests are not supported.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": _BUCKET_DESC,
+                    },
+                    "key": {
+                        "type": "string",
+                        "description": "Key of the object to upload. Length Constraints: Minimum length of 1.",
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "description": "The file path of file to upload.",
+                    },
+                    "overwrite": {
+                        "type": "boolean",
+                        "description": "Whether to overwrite the existing object if it already exists.",
+                    },
+                },
+                "required": ["bucket", "key", "file_path"],
+            }
+        )
+    )
+    def upload_file(self, **kwargs) -> list[types.TextContent]:
+        urls = self.storage.upload_file(**kwargs)
+        return [types.TextContent(type="text", text=str(urls))]
+
+    @tools.tool_meta(
+        types.Tool(
             name="GetObjectURL",
             description="Get the file download URL, and note that the Bucket where the file is located must be bound to a domain name. If using Qiniu's test domain, HTTPS access will not be available, and users need to make adjustments for this themselves.",
             inputSchema={
@@ -149,6 +213,8 @@ def register_tools(storage: StorageService):
             tool_impl.list_buckets,
             tool_impl.list_objects,
             tool_impl.get_object,
+            tool_impl.upload_text_data,
+            tool_impl.upload_file,
             tool_impl.get_object_url,
         ]
     )
