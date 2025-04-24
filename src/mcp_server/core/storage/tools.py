@@ -10,8 +10,7 @@ from ...tools import tools
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
-_BUCKET_DESC = """When you use this operation with a directory bucket, you must use virtual-hosted-style requests in the format ${bucket_name}.s3.${region_id}.qiniucs.com. Path-style requests are not supported. Directory bucket names must be unique in the chosen Availability Zone.
-"""
+_BUCKET_DESC = "Qiniu Cloud Storage bucket Name"
 
 class _ToolImpl:
     def __init__(self, storage: StorageService):
@@ -20,7 +19,7 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="ListBuckets",
-            description="Returns a list of all buckets owned by the authenticated sender of the request. To grant IAM permission to use this operation, you must add the s3:ListAllMyBuckets policy action.",
+            description="Return the Bucket you configured based on the conditions.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -40,7 +39,7 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="ListObjects",
-            description="Each request will return some or all (up to 100) objects in the bucket. You can use request parameters as selection criteria to return some objects in the bucket. If you want to continue listing, set start_after to the key of the last file in the last listing result so that you can list new content. To get a list of buckets, see ListBuckets.",
+            description="List objects in Qiniu Cloud, list a part each time, you can set start_after to continue listing, when the number of listed objects is less than max_keys, it means that all files are listed. start_after can be the key of the last file in the previous listing.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -50,15 +49,15 @@ class _ToolImpl:
                     },
                     "max_keys": {
                         "type": "integer",
-                        "description": "Sets the maximum number of keys returned in the response. By default, the action returns up to 20 key names. The response might contain fewer keys but will never contain more.",
+                        "description": "Sets the max number of keys returned, default: 20",
                     },
                     "prefix": {
                         "type": "string",
-                        "description": "Limits the response to keys that begin with the specified prefix.",
+                        "description": "Specify the prefix of the operation response key. Only keys that meet this prefix will be listed.",
                     },
                     "start_after": {
                         "type": "string",
-                        "description": "start_after is where you want S3 to start listing from. S3 starts listing after this specified key. start_after can be any key in the bucket.",
+                        "description": "start_after is where you want Qiniu Cloud to start listing from. Qiniu Cloud starts listing after this specified key. start_after can be any key in the bucket.",
                     },
                 },
                 "required": ["bucket"],
@@ -72,7 +71,7 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="GetObject",
-            description="Retrieves an object from Qiniu bucket. In the GetObject request, specify the full key name for the object. Path-style requests are not supported.",
+            description="Get an object contents from Qiniu Cloud bucket. In the GetObject request, specify the full key name for the object.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -82,7 +81,7 @@ class _ToolImpl:
                     },
                     "key": {
                         "type": "string",
-                        "description": "Key of the object to get. Length Constraints: Minimum length of 1.",
+                        "description": "Key of the object to get.",
                     },
                 },
                 "required": ["bucket", "key"],
@@ -198,7 +197,7 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="GetObjectURL",
-            description="Get the file download URL, and note that the Bucket where the file is located must be bound to a domain name. If using Qiniu's test domain, HTTPS access will not be available, and users need to make adjustments for this themselves.",
+            description="Get the file download URL, and note that the Bucket where the file is located must be bound to a domain name. If using Qiniu Cloud test domain, HTTPS access will not be available, and users need to make adjustments for this themselves.",
             inputSchema={
                 "type": "object",
                 "properties": {
