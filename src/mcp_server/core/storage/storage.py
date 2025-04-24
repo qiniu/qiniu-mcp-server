@@ -237,6 +237,13 @@ class StorageService:
 
         return self.get_object_url(bucket, key)
 
+    def fetch_object(self, bucket: str, key: str, url: str):
+        ret, info = self.bucket_manager.fetch(url, bucket, key=key)
+        if info.status_code != 200:
+            raise Exception(f"Failed to fetch object: {info.text}")
+
+        return self.get_object_url(bucket, key)
+
     def is_text_file(self, key: str) -> bool:
         """Determine if a file is text-based by its extension"""
         text_extensions = {

@@ -112,7 +112,7 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="UploadTextData",
-            description="Upload text data to Qiniu bucket. In the UploadData request, specify the full key name for the object. Path-style requests are not supported.",
+            description="Upload text data to Qiniu bucket.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -144,7 +144,7 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="UploadFile",
-            description="Upload file to Qiniu bucket. In the UploadFile request, specify the full key name for the object. Path-style requests are not supported.",
+            description="Upload a local file to Qiniu bucket.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -171,6 +171,28 @@ class _ToolImpl:
     )
     def upload_file(self, **kwargs) -> list[types.TextContent]:
         urls = self.storage.upload_file(**kwargs)
+        return [types.TextContent(type="text", text=str(urls))]
+
+    @tools.tool_meta(
+        types.Tool(
+            name="FetchObject",
+            description="Fetch a http object to Qiniu bucket.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "bucket": {
+                        "type": "string",
+                        "description": _BUCKET_DESC,
+                    },
+                    "key": {
+                        "type": "string",
+                    }
+                }
+            }
+        )
+    )
+    def fetch_object(self, **kwargs) -> list[types.TextContent]:
+        urls = self.storage.fetch_object(**kwargs)
         return [types.TextContent(type="text", text=str(urls))]
 
     @tools.tool_meta(
@@ -215,6 +237,7 @@ def register_tools(storage: StorageService):
             tool_impl.get_object,
             tool_impl.upload_text_data,
             tool_impl.upload_file,
+            tool_impl.fetch_object,
             tool_impl.get_object_url,
         ]
     )
