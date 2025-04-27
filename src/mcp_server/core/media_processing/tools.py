@@ -1,8 +1,11 @@
 import logging
+
+import qiniu
 from mcp import types
 
 from . import utils
 from .processing import MediaProcessingService
+from ...config import config
 from ...consts import consts
 from ...tools import tools
 
@@ -12,7 +15,8 @@ _OBJECT_URL_DESC = "The URL of the image. This can be a URL obtained via the Get
 
 
 class _ToolImpl:
-    def __init__(self, cli: MediaProcessingService):
+    def __init__(self, cfg: config.Config, cli: MediaProcessingService):
+        self.auth = qiniu.Auth(cfg.access_key, cfg.secret_key)
         self.client = cli
 
     @tools.tool_meta(
@@ -55,8 +59,8 @@ class _ToolImpl:
                 types.TextContent(type="text", text="percent must be between 1 and 999")
             ]
 
-        fop = f"imageMogr2/thumbnail/!{percent}p"
-        object_url = utils.url_add_processing_func(object_url, fop)
+        func = f"imageMogr2/thumbnail/!{percent}p"
+        object_url = utils.url_add_processing_func(auth=self.auth, url=object_url, func=func)
         return [
             types.TextContent(
                 type="text",
@@ -111,16 +115,16 @@ class _ToolImpl:
         if object_url is None or len(object_url) == 0:
             return [types.TextContent(type="text", text="object_url is required")]
 
-        fop = f"{width}x{height}"
-        if len(fop) == 1:
+        func = f"{width}x{height}"
+        if len(func) == 1:
             return [
                 types.TextContent(
                     type="text", text="At least one width or height must be set"
                 )
             ]
 
-        fop = f"imageMogr2/thumbnail/{fop}"
-        object_url = utils.url_add_processing_func(object_url, fop)
+        func = f"imageMogr2/thumbnail/{func}"
+        object_url = utils.url_add_processing_func(auth=self.auth, url=object_url, func=func)
         return [
             types.TextContent(
                 type="text",
@@ -191,7 +195,7 @@ class _ToolImpl:
             radius_y = radius_x
 
         func = f"roundPic/radiusx/{radius_x}/radiusy/{radius_y}"
-        object_url = utils.url_add_processing_func(object_url, func)
+        object_url = utils.url_add_processing_func(auth=self.auth, url=object_url, func=func)
         return [
             types.TextContent(
                 type="text",
@@ -228,7 +232,7 @@ class _ToolImpl:
             ]
 
         func = "imageInfo"
-        object_url = utils.url_add_processing_func(object_url, func)
+        object_url = utils.url_add_processing_func(auth=self.auth, url=object_url, func=func)
         return [
             types.TextContent(
                 type="text",
@@ -259,8 +263,8 @@ class _ToolImpl:
         return [types.TextContent(type="text", text=str(status))]
 
 
-def register_tools(cli: MediaProcessingService):
-    tool_impl = _ToolImpl(cli)
+def register_tools(cfg: config.Config, cli: MediaProcessingService):
+    tool_impl = _ToolImpl(cfg, cli)
     tools.auto_register_tools(
         [
             tool_impl.image_scale_by_percent,
