@@ -1,11 +1,16 @@
+import time
 from urllib import parse
+
+import qiniu
+
+from mcp_server.core.storage.tools import logger
 
 FUNC_POSITION_NONE = "none"
 FUNC_POSITION_PREFIX = "prefix"
 FUNC_POSITION_SUFFIX = "suffix"
 
 
-def url_add_processing_func(url: str, func: str) -> str:
+def url_add_processing_func(auth: qiniu.auth, url: str, func: str) -> str:
     func_items = func.split("/")
     func_prefix = func_items[0]
 
@@ -14,7 +19,8 @@ def url_add_processing_func(url: str, func: str) -> str:
     new_query = parse.quote(new_query, safe='&=')
     url_info = url_info._replace(query=new_query)
     new_url = parse.urlunparse(url_info)
-    return str(new_url)
+    new_url = _sign_url(str(new_url), auth)
+    return new_url
 
 
 def _query_add_processing_func(query: str, func: str, func_prefix: str) -> str:
@@ -70,3 +76,33 @@ def _query_add_processing_func(query: str, func: str, func_prefix: str) -> str:
     func = first_query + func.removeprefix(func_prefix)
     queries.insert(0, func)
     return "&".join(queries)
+
+
+def _sign_url(url: str, auth: qiniu.auth) -> str:
+    url_info = parse.urlparse(url)
+    query = url_info.query
+    if ('e=' not in query) or ('token=' not in query):
+        return url
+
+    queries = query.split("&")
+    if '' in queries:
+        queries.remove('')
+
+    # 移除之前的签名信息，但顺序不可变
+    expires = 3600
+    new_queries = []
+    for query_item in queries:
+        if query_item.startswith('e='):
+            try:
+                deadline = int(query_item.removeprefix('e='))
+                expires = deadline - int(time.time())
+            except Exception as e:
+                logger.warning(f"expires parse fail for url:{url} err:{str(e)}")
+                expires = 3600
+        elif not query_item.startswith('token='):
+            new_queries.append(query_item)
+
+    new_query = "&".join(new_queries)
+    url_info = url_info._replace(query=new_query)
+    new_url = parse.urlunparse(url_info)
+    return auth.private_download_url(new_url, expires=expires)

@@ -5,7 +5,7 @@ from ...config import config
 
 def load(cfg: config.Config):
     cli = processing.MediaProcessingService(cfg)
-    register_tools(cli)
+    register_tools(cfg, cli)
 
 
 __all__ = [
