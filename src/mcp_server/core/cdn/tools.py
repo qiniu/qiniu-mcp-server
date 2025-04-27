@@ -29,7 +29,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="CDNPrefetchUrls",
+            name="cdn_prefetch_urls",
             description="Newly added resources are proactively retrieved by the CDN and stored on its cache nodes in advance. Users simply submit the resource URLs, and the CDN automatically triggers the prefetch process.",
             inputSchema={
                 "type": "object",
@@ -76,7 +76,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="CDNRefresh",
+            name="cdn_refresh",
             description="This function marks resources cached on CDN nodes as expired. When users access these resources again, the CDN nodes will fetch the latest version from the origin server and store them anew.",
             inputSchema={
                 "type": "object",
