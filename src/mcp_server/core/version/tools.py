@@ -11,7 +11,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="Version",
+            name="version",
             description="qiniu mcp server version info.",
             inputSchema={
                 "type": "object",

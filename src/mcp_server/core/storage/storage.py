@@ -172,11 +172,11 @@ class StorageService:
         token = self.auth.upload_token(bucket=bucket, key=key, policy=policy)
         ret, info = qiniu.put_data(up_token=token, key=key, data=bytes(data, encoding="utf-8"))
         if info.status_code != 200:
-            raise Exception(f"Failed to upload object: {info.text}")
+            raise Exception(f"Failed to upload object: {info}")
 
         return self.get_object_url(bucket, key)
 
-    def upload_file(self, bucket: str, key: str, file_path: str, overwrite: bool = False) -> list[dict[str:Any]]:
+    def upload_local_file(self, bucket: str, key: str, file_path: str, overwrite: bool = False) -> list[dict[str:Any]]:
         policy = {
             "insertOnly": 1,
         }
@@ -188,14 +188,14 @@ class StorageService:
         token = self.auth.upload_token(bucket=bucket, key=key, policy=policy)
         ret, info = qiniu.put_file(up_token=token, key=key, file_path=file_path)
         if info.status_code != 200:
-            raise Exception(f"Failed to upload object: {info.text}")
+            raise Exception(f"Failed to upload object: {info}")
 
         return self.get_object_url(bucket, key)
 
     def fetch_object(self, bucket: str, key: str, url: str):
         ret, info = self.bucket_manager.fetch(url, bucket, key=key)
         if info.status_code != 200:
-            raise Exception(f"Failed to fetch object: {info.text}")
+            raise Exception(f"Failed to fetch object: {info}")
 
         return self.get_object_url(bucket, key)
 

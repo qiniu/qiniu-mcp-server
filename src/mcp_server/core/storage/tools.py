@@ -18,7 +18,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ListBuckets",
+            name="list_buckets",
             description="Return the Bucket you configured based on the conditions.",
             inputSchema={
                 "type": "object",
@@ -38,7 +38,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ListObjects",
+            name="list_objects",
             description="List objects in Qiniu Cloud, list a part each time, you can set start_after to continue listing, when the number of listed objects is less than max_keys, it means that all files are listed. start_after can be the key of the last file in the previous listing.",
             inputSchema={
                 "type": "object",
@@ -70,7 +70,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="GetObject",
+            name="get_object",
             description="Get an object contents from Qiniu Cloud bucket. In the GetObject request, specify the full key name for the object.",
             inputSchema={
                 "type": "object",
@@ -110,7 +110,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="UploadTextData",
+            name="upload_text_data",
             description="Upload text data to Qiniu bucket.",
             inputSchema={
                 "type": "object",
@@ -121,7 +121,7 @@ class _ToolImpl:
                     },
                     "key": {
                         "type": "string",
-                        "description": "Key of the object to upload. Length Constraints: Minimum length of 1.",
+                        "description": "The key under which a file is saved in Qiniu Cloud Storage serves as the unique identifier for the file within that space, typically using the filename.",
                     },
                     "data": {
                         "type": "string",
@@ -142,7 +142,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="UploadFile",
+            name="upload_local_file",
             description="Upload a local file to Qiniu bucket.",
             inputSchema={
                 "type": "object",
@@ -153,7 +153,7 @@ class _ToolImpl:
                     },
                     "key": {
                         "type": "string",
-                        "description": "Key of the object to upload. Length Constraints: Minimum length of 1.",
+                        "description": "The key under which a file is saved in Qiniu Cloud Storage serves as the unique identifier for the file within that space, typically using the filename.",
                     },
                     "file_path": {
                         "type": "string",
@@ -168,13 +168,13 @@ class _ToolImpl:
             }
         )
     )
-    def upload_file(self, **kwargs) -> list[types.TextContent]:
-        urls = self.storage.upload_file(**kwargs)
+    def upload_local_file(self, **kwargs) -> list[types.TextContent]:
+        urls = self.storage.upload_local_file(**kwargs)
         return [types.TextContent(type="text", text=str(urls))]
 
     @tools.tool_meta(
         types.Tool(
-            name="FetchObject",
+            name="fetch_object",
             description="Fetch a http object to Qiniu bucket.",
             inputSchema={
                 "type": "object",
@@ -185,8 +185,14 @@ class _ToolImpl:
                     },
                     "key": {
                         "type": "string",
-                    }
-                }
+                        "description": "The key under which a file is saved in Qiniu Cloud Storage serves as the unique identifier for the file within that space, typically using the filename.",
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "The URL of the object to fetch.",
+                    },
+                },
+                "required": ["bucket", "key", "url"],
             }
         )
     )
@@ -196,7 +202,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="GetObjectURL",
+            name="get_object_url",
             description="Get the file download URL, and note that the Bucket where the file is located must be bound to a domain name. If using Qiniu Cloud test domain, HTTPS access will not be available, and users need to make adjustments for this themselves.",
             inputSchema={
                 "type": "object",
@@ -207,7 +213,7 @@ class _ToolImpl:
                     },
                     "key": {
                         "type": "string",
-                        "description": "Key of the object to get. Length Constraints: Minimum length of 1.",
+                        "description": "Key of the object to get.",
                     },
                     "disable_ssl": {
                         "type": "boolean",
@@ -235,8 +241,7 @@ def register_tools(storage: StorageService):
             tool_impl.list_objects,
             tool_impl.get_object,
             tool_impl.upload_text_data,
-            tool_impl.upload_file,
-            tool_impl.fetch_object,
+            tool_impl.upload_local_file,
             tool_impl.get_object_url,
         ]
     )

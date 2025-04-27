@@ -17,7 +17,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ImageScaleByPercent",
+            name="image_scale_by_percent",
             description="""Image scaling tool that resizes images based on a percentage and returns information about the scaled image.
             The information includes the object_url of the scaled image, which users can directly use for HTTP GET requests to retrieve the image content or open in a browser to view the file.
             The image must be stored in a Qiniu Cloud Bucket.
@@ -70,7 +70,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ImageScaleBySize",
+            name="image_scale_by_size",
             description="""Image scaling tool that resizes images based on a specified width or height and returns information about the scaled image.
             The information includes the object_url of the scaled image, which users can directly use for HTTP GET requests to retrieve the image content or open in a browser to view the file.
             The image must be stored in a Qiniu Cloud Bucket.
@@ -134,7 +134,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ImageRoundCorner",
+            name="image_round_corner",
             description="""Image rounded corner tool that processes images based on width, height, and corner radius, returning information about the processed image.
             If only radius_x or radius_y is set, the other parameter will be assigned the same value, meaning horizontal and vertical parameters will be identical.
             The information includes the object_url of the processed image, which users can directly use for HTTP GET requests to retrieve the image content or open in a browser to view the file.
@@ -203,7 +203,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="ImageInfo",
+            name="image_info",
             description="Retrieves basic image information, including image format, size, and color model.",
             inputSchema={
                 "type": "object",
@@ -240,7 +240,7 @@ class _ToolImpl:
 
     @tools.tool_meta(
         types.Tool(
-            name="GetFopStatus",
+            name="get_fop_status",
             description="Retrieves the execution status of a Fop operation.",
             inputSchema={
                 "type": "object",
