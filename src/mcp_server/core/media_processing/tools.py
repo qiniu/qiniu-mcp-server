@@ -98,11 +98,7 @@ class _ToolImpl:
                         "minimum": 1
                     },
                 },
-                "required": ["object_url"],
-                "anyOf": [
-                    {"required": ["width"]},
-                    {"required": ["height"]}
-                ]
+                "required": ["object_url"]
             },
         )
     )
@@ -162,10 +158,6 @@ class _ToolImpl:
                     },
                 },
                 "required": ["object_url"],
-                "anyOf": [
-                    {"required": ["radius_x"]},
-                    {"required": ["radius_y"]}
-                ]
             }
         )
     )
