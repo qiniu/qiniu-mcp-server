@@ -106,17 +106,7 @@ class _ToolImpl:
                         "maxItems": 10,
                         "description": "List of directory patterns to refresh (max 10 items). Must end with '/' or '/*' to indicate directory scope",
                     },
-                },
-                "anyOf": [  # 至少有一个是非空数组
-                    {
-                        "required": ["urls"],
-                        "properties": {"urls": {"not": {"maxItems": 0}}},
-                    },
-                    {
-                        "required": ["dirs"],
-                        "properties": {"dirs": {"not": {"maxItems": 0}}},
-                    },
-                ],
+                }
             },
         )
     )
