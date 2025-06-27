@@ -15,8 +15,8 @@ class StorageService:
     def __init__(self, cfg: config.Config = None):
         # Configure boto3 with retries and timeouts
         self.s3_config = S3Config(
-            retries=dict(max_attempts=3, mode="adaptive"),
-            connect_timeout=5,
+            retries=dict(max_attempts=2, mode="adaptive"),
+            connect_timeout=30,
             read_timeout=60,
             max_pool_connections=50,
         )
