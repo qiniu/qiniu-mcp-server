@@ -8,6 +8,7 @@ authors = [
 ]
 keywords = ["qiniu", "mcp", "llm"]
 dependencies = [
+    "aiohttp>=3.9.0",
     "aioboto3>=13.2.0",
     "fastjsonschema>=2.21.1",
     "httpx>=0.28.1",
