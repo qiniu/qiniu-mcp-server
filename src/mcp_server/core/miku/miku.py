@@ -309,10 +309,10 @@ class MikuService:
             endpoint = endpoint[8:]
 
         # Remove bucket prefix if present (format: bucket.endpoint)
-        if '.' in endpoint:
-            parts = endpoint.split('.', 1)
-            if len(parts) > 1:
-                endpoint = parts[1]
+       # if '.' in endpoint:
+       #     parts = endpoint.split('.', 1)
+       #     if len(parts) > 1:
+       #         endpoint = parts[1]
 
         url = f"http://{endpoint}/?trafficStats&begin={begin}&end={end}&g=5min&select=flow&flow=downflow"
         headers = {
