@@ -41,13 +41,13 @@ def load_config() -> Config:
 
     if not config.access_key or len(config.access_key) == 0:
         config.access_key = "YOUR_QINIU_ACCESS_KEY"
-    if not config.secret_key or len(config.access_key) == 0:
+    if not config.secret_key or len(config.secret_key) == 0:
         config.secret_key = "YOUR_QINIU_SECRET_KEY"
     if not config.api_key or len(config.api_key) == 0:
         config.api_key = "YOUR_QINIU_API_KEY"
-    if not config.endpoint_url or len(config.access_key) == 0:
+    if not config.endpoint_url or len(config.endpoint_url) == 0:
         config.endpoint_url = "YOUR_QINIU_ENDPOINT_URL"
-    if not config.region_name or len(config.access_key) == 0:
+    if not config.region_name or len(config.region_name) == 0:
         config.region_name = "YOUR_QINIU_REGION_NAME"
 
     logger.info(f"Configured   access_key: {config.access_key}")
