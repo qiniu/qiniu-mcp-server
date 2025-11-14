@@ -11,7 +11,7 @@ logger = logging.getLogger(consts.LOGGER_NAME)
 class MikuService:
     def __init__(self, cfg: config.Config = None):
         self.config = cfg
-        self.api_key = cfg.access_key if cfg else None
+        self.api_key = cfg.api_key if cfg else None
         self.endpoint_url = cfg.endpoint_url if cfg else None
 
     def _get_auth_header(self) -> Dict[str, str]:
