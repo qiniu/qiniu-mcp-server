@@ -8,6 +8,7 @@ from ..consts import consts
 
 _CONFIG_ENV_KEY_ACCESS_KEY = "QINIU_ACCESS_KEY"
 _CONFIG_ENV_KEY_SECRET_KEY = "QINIU_SECRET_KEY"
+_CONFIG_ENV_KEY_API_KEY = "QINIU_API_KEY"
 _CONFIG_ENV_KEY_ENDPOINT_URL = "QINIU_ENDPOINT_URL"
 _CONFIG_ENV_KEY_REGION_NAME = "QINIU_REGION_NAME"
 _CONFIG_ENV_KEY_BUCKETS = "QINIU_BUCKETS"
@@ -22,6 +23,7 @@ load_dotenv()
 class Config:
     access_key: str
     secret_key: str
+    api_key: str
     endpoint_url: str
     region_name: str
     buckets: List[str]
@@ -31,6 +33,7 @@ def load_config() -> Config:
     config = Config(
         access_key=os.getenv(_CONFIG_ENV_KEY_ACCESS_KEY),
         secret_key=os.getenv(_CONFIG_ENV_KEY_SECRET_KEY),
+        api_key=os.getenv(_CONFIG_ENV_KEY_API_KEY),
         endpoint_url=os.getenv(_CONFIG_ENV_KEY_ENDPOINT_URL),
         region_name=os.getenv(_CONFIG_ENV_KEY_REGION_NAME),
         buckets=_get_configured_buckets_from_env(),
@@ -40,6 +43,8 @@ def load_config() -> Config:
         config.access_key = "YOUR_QINIU_ACCESS_KEY"
     if not config.secret_key or len(config.access_key) == 0:
         config.secret_key = "YOUR_QINIU_SECRET_KEY"
+    if not config.api_key or len(config.api_key) == 0:
+        config.api_key = "YOUR_QINIU_API_KEY"
     if not config.endpoint_url or len(config.access_key) == 0:
         config.endpoint_url = "YOUR_QINIU_ENDPOINT_URL"
     if not config.region_name or len(config.access_key) == 0:
