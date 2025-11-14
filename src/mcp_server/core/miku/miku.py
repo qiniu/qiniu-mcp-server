@@ -328,7 +328,7 @@ class MikuService:
                 text = await response.text()
 
                 if status == 200:
-                    logger.info(f"Successfully queried live traffic stats")
+                    logger.info("Successfully queried live traffic stats")
                     return {
                         "status": "success",
                         "begin": begin,
