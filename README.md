@@ -22,7 +22,7 @@ Server 来访问七牛云存储、智能多媒体服务等。
   - 根据链接预取文件
 - 直播
     - 创建直播空间bucket和直播流
-    - 绑定推拉流域名，获取推拉流直播地址
+    - 绑定推拉流域名,获取推拉流直播地址
     - 获取直播用量
 
 ## 环境要求
@@ -95,7 +95,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
          ],
          "env": {
            "QINIU_API_KEY": "YOUR_API_KEY",
-           "QINIU_ENDPOINT_URL": "YOUR_ENDPOINT_URL",
+           "QINIU_ENDPOINT_URL": "YOUR_ENDPOINT_URL"
         },
          "disabled": false
        }
