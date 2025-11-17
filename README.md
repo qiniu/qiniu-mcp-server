@@ -95,7 +95,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
          ],
          "env": {
            "QINIU_API_KEY": "YOUR_API_KEY",
-           "QINIU_ENDPOINT_URL": "YOUR_ENDPOINT_URL",
+           "QINIU_ENDPOINT_URL": "YOUR_ENDPOINT_URL"
         },
          "disabled": false
        }
