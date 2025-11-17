@@ -3,7 +3,7 @@ from .storage import load as load_storage
 from .media_processing import load as load_media_processing
 from .cdn import load as load_cdn
 from .version import load as load_version
-from .miku import load as load_miku
+from .live_streaming import load as load_live_streaming
 
 
 def load():
@@ -19,5 +19,5 @@ def load():
     # 智能多媒体
     load_media_processing(cfg)
     # Miku
-    load_miku(cfg)
+    load_live_streaming(cfg)
 

@@ -8,7 +8,7 @@ from ...consts import consts
 logger = logging.getLogger(consts.LOGGER_NAME)
 
 
-class MikuService:
+class LiveStreamingService:
     def __init__(self, cfg: config.Config = None):
         self.config = cfg
         self.api_key = cfg.api_key if cfg else None
