@@ -2,24 +2,24 @@ import logging
 
 from mcp import types
 
-from .miku import MikuService
+from .live_streaming import LiveStreamingService
 from ...consts import consts
 from ...tools import tools
 
 logger = logging.getLogger(consts.LOGGER_NAME)
 
-_BUCKET_DESC = "Miku bucket name"
-_STREAM_DESC = "Miku stream name"
+_BUCKET_DESC = "LiveStreaming bucket name"
+_STREAM_DESC = "LiveStreaming stream name"
 
 
 class _ToolImpl:
-    def __init__(self, miku: MikuService):
-        self.miku = miku
+    def __init__(self, live_streaming: LiveStreamingService):
+        self.live_streaming = live_streaming
 
     @tools.tool_meta(
         types.Tool(
-            name="miku_create_bucket",
-            description="Create a new bucket in Miku using S3-style API. The bucket will be created at https://<bucket>.<endpoint_url>",
+            name="live_streaming_create_bucket",
+            description="Create a new bucket in LiveStreaming using S3-style API. The bucket will be created at https://<bucket>.<endpoint_url>",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -33,13 +33,13 @@ class _ToolImpl:
         )
     )
     async def create_bucket(self, **kwargs) -> list[types.TextContent]:
-        result = await self.miku.create_bucket(**kwargs)
+        result = await self.live_streaming.create_bucket(**kwargs)
         return [types.TextContent(type="text", text=str(result))]
 
     @tools.tool_meta(
         types.Tool(
-            name="miku_create_stream",
-            description="Create a new stream in Miku using S3-style API. The stream will be created at https://<bucket>.<endpoint_url>/<stream>",
+            name="live_streaming_create_stream",
+            description="Create a new stream in LiveStreaming using S3-style API. The stream will be created at https://<bucket>.<endpoint_url>/<stream>",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -57,13 +57,13 @@ class _ToolImpl:
         )
     )
     async def create_stream(self, **kwargs) -> list[types.TextContent]:
-        result = await self.miku.create_stream(**kwargs)
+        result = await self.live_streaming.create_stream(**kwargs)
         return [types.TextContent(type="text", text=str(result))]
 
     @tools.tool_meta(
         types.Tool(
-            name="miku_bind_push_domain",
-            description="Bind a push domain to a Miku bucket for live streaming. This allows you to configure the domain for pushing RTMP/WHIP streams.",
+            name="live_streaming_bind_push_domain",
+            description="Bind a push domain to a LiveStreaming bucket for live streaming. This allows you to configure the domain for pushing RTMP/WHIP streams.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -86,13 +86,13 @@ class _ToolImpl:
         )
     )
     async def bind_push_domain(self, **kwargs) -> list[types.TextContent]:
-        result = await self.miku.bind_push_domain(**kwargs)
+        result = await self.live_streaming.bind_push_domain(**kwargs)
         return [types.TextContent(type="text", text=str(result))]
 
     @tools.tool_meta(
         types.Tool(
-            name="miku_bind_play_domain",
-            description="Bind a playback domain to a Miku bucket for live streaming. This allows you to configure the domain for playing back streams via FLV/M3U8/WHEP.",
+            name="live_streaming_bind_play_domain",
+            description="Bind a playback domain to a LiveStreaming bucket for live streaming. This allows you to configure the domain for playing back streams via FLV/M3U8/WHEP.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -115,12 +115,12 @@ class _ToolImpl:
         )
     )
     async def bind_play_domain(self, **kwargs) -> list[types.TextContent]:
-        result = await self.miku.bind_play_domain(**kwargs)
+        result = await self.live_streaming.bind_play_domain(**kwargs)
         return [types.TextContent(type="text", text=str(result))]
 
     @tools.tool_meta(
         types.Tool(
-            name="miku_get_push_urls",
+            name="live_streaming_get_push_urls",
             description="Get push URLs for a stream. Returns RTMP and WHIP push URLs that can be used to push live streams.",
             inputSchema={
                 "type": "object",
@@ -143,12 +143,12 @@ class _ToolImpl:
         )
     )
     async def get_push_urls(self, **kwargs) -> list[types.TextContent]:
-        result = self.miku.get_push_urls(**kwargs)
+        result = self.live_streaming.get_push_urls(**kwargs)
         return [types.TextContent(type="text", text=str(result))]
 
     @tools.tool_meta(
         types.Tool(
-            name="miku_get_play_urls",
+            name="live_streaming_get_play_urls",
             description="Get playback URLs for a stream. Returns FLV, M3U8, and WHEP playback URLs that can be used to play live streams.",
             inputSchema={
                 "type": "object",
@@ -171,12 +171,12 @@ class _ToolImpl:
         )
     )
     async def get_play_urls(self, **kwargs) -> list[types.TextContent]:
-        result = self.miku.get_play_urls(**kwargs)
+        result = self.live_streaming.get_play_urls(**kwargs)
         return [types.TextContent(type="text", text=str(result))]
 
     @tools.tool_meta(
         types.Tool(
-            name="miku_query_live_traffic_stats",
+            name="live_streaming_query_live_traffic_stats",
             description="Query live streaming traffic statistics for a time range. Returns bandwidth and traffic usage data.",
             inputSchema={
                 "type": "object",
@@ -195,12 +195,12 @@ class _ToolImpl:
         )
     )
     async def query_live_traffic_stats(self, **kwargs) -> list[types.TextContent]:
-        result = await self.miku.query_live_traffic_stats(**kwargs)
+        result = await self.live_streaming.query_live_traffic_stats(**kwargs)
         return [types.TextContent(type="text", text=str(result))]
 
 
-def register_tools(miku: MikuService):
-    tool_impl = _ToolImpl(miku)
+def register_tools(live_streaming: LiveStreamingService):
+    tool_impl = _ToolImpl(live_streaming)
     tools.auto_register_tools(
         [
             tool_impl.create_bucket,
