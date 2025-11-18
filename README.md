@@ -1,4 +1,5 @@
 # Qiniu MCP Server
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/qiniu/qiniu-mcp-server)](https://archestra.ai/mcp-catalog/qiniu__qiniu-mcp-server)
 
 ## 概述
 
