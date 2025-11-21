@@ -86,8 +86,18 @@ class LiveStreamingService:
         Returns:
             Dict containing the response status and message
         """
-        url = self._build_bucket_url(bucket)
-        headers = self._get_auth_header(method="PUT",url=url)
+        # Use base endpoint for bucket creation, not bucket-prefixed URL
+        if not self.live_endpoint:
+            self.live_endpoint = "mls.cn-east-1.qiniumiku.com"
+
+        endpoint = self.live_endpoint
+        if endpoint.startswith("http://"):
+            endpoint = endpoint[7:]
+        elif endpoint.startswith("https://"):
+            endpoint = endpoint[8:]
+
+        url = f"https://{endpoint}/{bucket}"
+        headers = self._get_auth_header(method="PUT", url=url)
 
         logger.info(f"Creating bucket: {bucket} at {url}")
 
@@ -126,7 +136,17 @@ class LiveStreamingService:
         Returns:
             Dict containing the response status and message
         """
-        url = self._build_stream_url(bucket, stream)
+        # Use base endpoint for stream creation, not bucket-prefixed URL
+        if not self.live_endpoint:
+            self.live_endpoint = "mls.cn-east-1.qiniumiku.com"
+
+        endpoint = self.live_endpoint
+        if endpoint.startswith("http://"):
+            endpoint = endpoint[7:]
+        elif endpoint.startswith("https://"):
+            endpoint = endpoint[8:]
+
+        url = f"https://{endpoint}/{bucket}/{stream}"
         headers = self._get_auth_header(method="PUT", url=url)
 
         logger.info(f"Creating stream: {stream} in bucket: {bucket} at {url}")
