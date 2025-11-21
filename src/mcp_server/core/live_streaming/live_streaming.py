@@ -1,9 +1,13 @@
 import aiohttp
+import base64
+import hmac
+import hashlib
 import json
 import logging
 import qiniu
+from urllib.parse import urlparse
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from ...config import config
 from ...consts import consts
 
@@ -18,32 +22,92 @@ class LiveStreamingService:
         self.access_key = cfg.access_key if cfg else None
         self.secret_key = cfg.secret_key if cfg else None
 
-        # Initialize qiniu.Auth if access_key and secret_key are available
-        self.auth = None
-        if self.access_key and self.secret_key and \
-           self.access_key != "YOUR_QINIU_ACCESS_KEY" and \
-           self.secret_key != "YOUR_QINIU_SECRET_KEY":
-            self.auth = qiniu.Auth(self.access_key, self.secret_key)
+    def _generate_qiniu_token(self, method: str, url: str, content_type: Optional[str] = None, body: Optional[str] = None) -> str:
+        """
+        Generate Qiniu authentication token following the official signing algorithm.
 
-    def _get_auth_header(self, url: str = "", body: bytes = None, content_type: str = "application/x-www-form-urlencoded") -> Dict[str, str]:
+        Algorithm:
+        1. Add Method and Path: data = "<Method> <Path>"
+        2. Add Query if exists: data += "?<RawQuery>"
+        3. Add Host: data += "\nHost: <Host>"
+        4. Add Content-Type if exists: data += "\nContent-Type: <Content-Type>"
+        5. Add newlines: data += "\n\n"
+        6. Add Body if conditions met: bodyOK && contentTypeOK
+        7. Sign with HMAC-SHA1 and URL-safe Base64 encode
+        8. Return: "Qiniu " + access_key + ":" + encoded_sign
+
+        Args:
+            method: HTTP method (GET, POST, PUT, DELETE, etc.)
+            url: The full request URL
+            content_type: The Content-Type header value
+            body: The request body as string
+
+        Returns:
+            The complete Qiniu authorization token
+        """
+        if not self.access_key or not self.secret_key:
+            raise ValueError("QINIU_ACCESS_KEY and QINIU_SECRET_KEY are required")
+
+        # Parse the URL
+        parsed = urlparse(url)
+
+        # 1. Add Method and Path
+        data = f"{method} {parsed.path or '/'}"
+
+        # 2. Add Query if exists
+        if parsed.query:
+            data += f"?{parsed.query}"
+
+        # 3. Add Host
+        data += f"\nHost: {parsed.netloc}"
+
+        # 4. Add Content-Type if exists and not empty
+        if content_type:
+            data += f"\nContent-Type: {content_type}"
+
+        # 5. Add newlines
+        data += "\n\n"
+
+        # 6. Add Body if conditions are met
+        # bodyOK: Content-Length exists and Body is not empty
+        # contentTypeOK: Content-Type exists and is not "application/octet-stream"
+        if body:
+            body_ok = len(body) > 0
+            content_type_ok = content_type and content_type != "application/octet-stream"
+
+            if body_ok and content_type_ok:
+                data += body
+
+        # 7. Calculate HMAC-SHA1 signature
+        secret_bytes = self.secret_key.encode('utf-8')
+        data_bytes = data.encode('utf-8')
+        sign = hmac.new(secret_bytes, data_bytes, hashlib.sha1).digest()
+
+        # 8. URL-safe Base64 encode
+        encoded_sign = base64.urlsafe_b64encode(sign).decode('utf-8')
+
+        # 9. Construct and return the Qiniu token
+        qiniu_token = f"{self.access_key}:{encoded_sign}"
+
+        return qiniu_token
+
+    def _get_auth_header(self, method: str, url: str, content_type: Optional[str] = None, body: Optional[str] = None) -> Dict[str, str]:
         """
         Generate authorization header
         Priority: QINIU_ACCESS_KEY/QINIU_SECRET_KEY > API KEY
 
         Args:
-            url: The request URL for signing (required for Qiniu Auth)
-            body: The request body for signing
+            method: HTTP method (GET, POST, PUT, DELETE, etc.)
+            url: The full request URL for signing
             content_type: The content type of the request
+            body: The request body as string
         """
         # Priority 1: Use QINIU_ACCESS_KEY/QINIU_SECRET_KEY if configured
-        if self.auth:
-            # Generate Qiniu token for the request with the actual URL
-            # This ensures proper authentication for dynamic hosts like <bucket>.mls.cn-east-1.qiniumiku.com
-            token = self.auth.token_of_request(
-                url=url,
-                body=body,
-                content_type=content_type
-            )
+        if self.access_key and self.secret_key and \
+           self.access_key != "YOUR_QINIU_ACCESS_KEY" and \
+           self.secret_key != "YOUR_QINIU_SECRET_KEY":
+            # Generate Qiniu token using custom signing algorithm
+            token = self._generate_qiniu_token(method, url, content_type, body)
             return {
                 "Authorization": f"Qiniu {token}"
             }
@@ -97,7 +161,7 @@ class LiveStreamingService:
             Dict containing the response status and message
         """
         url = self._build_bucket_url(bucket)
-        headers = self._get_auth_header(url=url)
+        headers = self._get_auth_header(method="PUT", url=url)
 
         logger.info(f"Creating bucket: {bucket} at {url}")
 
@@ -137,7 +201,7 @@ class LiveStreamingService:
             Dict containing the response status and message
         """
         url = self._build_stream_url(bucket, stream)
-        headers = self._get_auth_header(url=url)
+        headers = self._get_auth_header(method="PUT", url=url)
 
         logger.info(f"Creating stream: {stream} in bucket: {bucket} at {url}")
 
@@ -184,9 +248,9 @@ class LiveStreamingService:
             "domain": domain,
             "type": domain_type
         }
-        body = json.dumps(data).encode('utf-8')
+        body_str = json.dumps(data)
         headers = {
-            **self._get_auth_header(url=url, body=body, content_type="application/json"),
+            **self._get_auth_header(method="POST", url=url, content_type="application/json", body=body_str),
             "Content-Type": "application/json"
         }
 
@@ -235,9 +299,9 @@ class LiveStreamingService:
             "domain": domain,
             "type": domain_type
         }
-        body = json.dumps(data).encode('utf-8')
+        body_str = json.dumps(data)
         headers = {
-            **self._get_auth_header(url=url, body=body, content_type="application/json"),
+            **self._get_auth_header(method="POST", url=url, content_type="application/json", body=body_str),
             "Content-Type": "application/json"
         }
 
@@ -351,10 +415,7 @@ class LiveStreamingService:
        #         endpoint = parts[1]
 
         url = f"http://{endpoint}/?trafficStats&begin={begin}&end={end}&g=5min&select=flow&flow=downflow"
-        headers = {
-            **self._get_auth_header(url=url, content_type="application/json"),
-            "Content-Type": "application/json"
-        }
+        headers = self._get_auth_header(method="GET", url=url)
 
         logger.info(f"Querying live traffic stats from {begin} to {end}")
 
@@ -401,7 +462,7 @@ class LiveStreamingService:
             endpoint = endpoint[8:]
 
         url = f"https://{endpoint}/"
-        headers = self._get_auth_header(url=url)
+        headers = self._get_auth_header(method="GET", url=url)
 
         logger.info(f"Listing all live streaming buckets from {url}")
 
@@ -447,7 +508,7 @@ class LiveStreamingService:
             endpoint = endpoint[8:]
 
         url = f"https://{endpoint}/?streamlist&bucketId={bucket_id}"
-        headers = self._get_auth_header(url=url)
+        headers = self._get_auth_header(method="GET", url=url)
 
         logger.info(f"Listing streams in bucket: {bucket_id}")
 
