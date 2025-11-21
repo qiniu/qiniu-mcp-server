@@ -1,4 +1,5 @@
 import aiohttp
+import json
 import logging
 import qiniu
 
@@ -24,19 +25,24 @@ class LiveStreamingService:
            self.secret_key != "YOUR_QINIU_SECRET_KEY":
             self.auth = qiniu.Auth(self.access_key, self.secret_key)
 
-    def _get_auth_header(self) -> Dict[str, str]:
+    def _get_auth_header(self, url: str = "", body: bytes = None, content_type: str = "application/x-www-form-urlencoded") -> Dict[str, str]:
         """
         Generate authorization header
         Priority: QINIU_ACCESS_KEY/QINIU_SECRET_KEY > API KEY
+
+        Args:
+            url: The request URL for signing (required for Qiniu Auth)
+            body: The request body for signing
+            content_type: The content type of the request
         """
         # Priority 1: Use QINIU_ACCESS_KEY/QINIU_SECRET_KEY if configured
         if self.auth:
-            # Generate Qiniu token for the request
-            # For live streaming API, we use a simple token format
+            # Generate Qiniu token for the request with the actual URL
+            # This ensures proper authentication for dynamic hosts like <bucket>.mls.cn-east-1.qiniumiku.com
             token = self.auth.token_of_request(
-                url="",
-                body=None,
-                content_type="application/x-www-form-urlencoded"
+                url=url,
+                body=body,
+                content_type=content_type
             )
             return {
                 "Authorization": f"Qiniu {token}"
@@ -91,7 +97,7 @@ class LiveStreamingService:
             Dict containing the response status and message
         """
         url = self._build_bucket_url(bucket)
-        headers = self._get_auth_header()
+        headers = self._get_auth_header(url=url)
 
         logger.info(f"Creating bucket: {bucket} at {url}")
 
@@ -131,7 +137,7 @@ class LiveStreamingService:
             Dict containing the response status and message
         """
         url = self._build_stream_url(bucket, stream)
-        headers = self._get_auth_header()
+        headers = self._get_auth_header(url=url)
 
         logger.info(f"Creating stream: {stream} in bucket: {bucket} at {url}")
 
@@ -174,13 +180,14 @@ class LiveStreamingService:
             Dict containing the response status and message
         """
         url = f"{self._build_bucket_url(bucket)}/?pushDomain"
-        headers = {
-            **self._get_auth_header(),
-            "Content-Type": "application/json"
-        }
         data = {
             "domain": domain,
             "type": domain_type
+        }
+        body = json.dumps(data).encode('utf-8')
+        headers = {
+            **self._get_auth_header(url=url, body=body, content_type="application/json"),
+            "Content-Type": "application/json"
         }
 
         logger.info(f"Binding push domain: {domain} (type: {domain_type}) to bucket: {bucket}")
@@ -224,13 +231,14 @@ class LiveStreamingService:
             Dict containing the response status and message
         """
         url = f"{self._build_bucket_url(bucket)}/?domain"
-        headers = {
-            **self._get_auth_header(),
-            "Content-Type": "application/json"
-        }
         data = {
             "domain": domain,
             "type": domain_type
+        }
+        body = json.dumps(data).encode('utf-8')
+        headers = {
+            **self._get_auth_header(url=url, body=body, content_type="application/json"),
+            "Content-Type": "application/json"
         }
 
         logger.info(f"Binding playback domain: {domain} (type: {domain_type}) to bucket: {bucket}")
@@ -344,7 +352,7 @@ class LiveStreamingService:
 
         url = f"http://{endpoint}/?trafficStats&begin={begin}&end={end}&g=5min&select=flow&flow=downflow"
         headers = {
-            **self._get_auth_header(),
+            **self._get_auth_header(url=url, content_type="application/json"),
             "Content-Type": "application/json"
         }
 
@@ -393,7 +401,7 @@ class LiveStreamingService:
             endpoint = endpoint[8:]
 
         url = f"https://{endpoint}/"
-        headers = self._get_auth_header()
+        headers = self._get_auth_header(url=url)
 
         logger.info(f"Listing all live streaming buckets from {url}")
 
@@ -439,7 +447,7 @@ class LiveStreamingService:
             endpoint = endpoint[8:]
 
         url = f"https://{endpoint}/?streamlist&bucketId={bucket_id}"
-        headers = self._get_auth_header()
+        headers = self._get_auth_header(url=url)
 
         logger.info(f"Listing streams in bucket: {bucket_id}")
 
