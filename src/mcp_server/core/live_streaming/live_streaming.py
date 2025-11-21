@@ -16,18 +16,21 @@ logger = logging.getLogger(consts.LOGGER_NAME)
 class LiveStreamingService:
     def __init__(self, cfg: config.Config = None):
         self.config = cfg
-        self.api_key = cfg.live_api_key if cfg else None
+        self.live_api_key = cfg.live_api_key if cfg else None
         self.live_endpoint = cfg.live_endpoint if cfg else "mls.cn-east-1.qiniumiku.com"
         self.access_key = cfg.access_key if cfg else None
         self.secret_key = cfg.secret_key if cfg else None
 
 
     def _get_auth_header(self, method: str, url: str, content_type: Optional[str] = None, body: Optional[str] = None) -> Dict[str, str]:
-        """
-        Generate authorization header
-        Priority: QINIU_ACCESS_KEY/QINIU_SECRET_KEY > API KEY
-        """
-        # Priority 1: Use QINIU_ACCESS_KEY/QINIU_SECRET_KEY if configured
+
+        # Priority 1: Fall back to API KEY if ACCESS_KEY/SECRET_KEY not configured
+        if self.live_api_key and self.live_api_key != "YOUR_QINIU_LIVE_API_KEY":
+            return {
+                "Authorization": f"Bearer {self.live_api_key}"
+            }
+
+        # Priority 2: Use QINIU_ACCESS_KEY/QINIU_SECRET_KEY if configured
         if self.access_key and self.secret_key and \
                 self.access_key != "YOUR_QINIU_ACCESS_KEY" and \
                 self.secret_key != "YOUR_QINIU_SECRET_KEY":
@@ -37,14 +40,6 @@ class LiveStreamingService:
             return {
                 "Authorization": f"Qiniu {token}"
             }
-
-        # Priority 2: Fall back to API KEY if ACCESS_KEY/SECRET_KEY not configured
-        if not self.api_key or self.api_key == "YOUR_QINIU_API_KEY":
-            raise ValueError("Neither QINIU_ACCESS_KEY/QINIU_SECRET_KEY nor QINIU_API_KEY is configured")
-
-        return {
-            "Authorization": f"Bearer {self.api_key}"
-        }
 
     def _build_bucket_url(self, bucket: str) -> str:
         """Build S3-style bucket URL"""
@@ -468,7 +463,7 @@ class LiveStreamingService:
         parsed = urlparse(url)
 
         # 1. Add Method and Path
-        data = f"{method} {parsed.path or '/'}"
+        data = f"{method} {parsed.path}"
 
         # 2. Add Query if exists
         if parsed.query:
