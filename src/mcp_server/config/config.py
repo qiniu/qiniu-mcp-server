@@ -46,7 +46,7 @@ def load_config() -> Config:
     if not config.api_key or len(config.api_key) == 0:
         config.api_key = "YOUR_QINIU_API_KEY"
     if not config.endpoint_url or len(config.endpoint_url) == 0:
-        config.endpoint_url = "YOUR_QINIU_ENDPOINT_URL"
+        config.endpoint_url = "mls.cn-east-1.qiniumiku.com"
     if not config.region_name or len(config.region_name) == 0:
         config.region_name = "YOUR_QINIU_REGION_NAME"
 
