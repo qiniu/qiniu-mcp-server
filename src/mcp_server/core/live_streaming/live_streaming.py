@@ -5,7 +5,6 @@ import base64
 import hmac
 import hashlib
 
-from typing import Dict, Any
 from ...config import config
 from ...consts import consts
 from urllib.parse import urlparse
