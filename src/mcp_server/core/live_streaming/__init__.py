@@ -4,8 +4,8 @@ from ...config import config
 
 
 def load(cfg: config.Config):
-    miku = LiveStreamingService(cfg)
-    register_tools(miku)
+    live = LiveStreamingService(cfg)
+    register_tools(live)
 
 
 __all__ = ["load"]

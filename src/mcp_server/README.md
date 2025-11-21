@@ -103,6 +103,74 @@
    - Returns:
      - 操作状态信息
 
+
+### 直播 工具
+
+1. `CreateBucket`
+    - 创建新的直播空间
+    - Inputs:
+        - `bucket` (string):  bucket 名称
+    - Returns:
+        - `status_code` (integer): 创建结果code，200代表成功
+
+2. `CreateStream`
+    - 在直播空间下，创建新的直播流
+    - Inputs:
+        - `bucket` (string):  bucket 名称
+        - `stream` (string): 流名称
+    - Returns:
+        - `status_code` (integer): 创建结果code，200代表成功
+3. `ListBuckets`
+    - 查询当前用户配置的 Bucket
+    - Inputs:
+        - `prefix` (string, optional): Bucket 名称前缀，用于筛选特定前缀的 Bucket
+    - Returns:
+        - 满足条件的 Bucket 列表及其详细信息
+4. `ListStreams`
+    - 列举指定 Bucket 中的流列表
+    - Inputs:
+        - `bucket` (string): bucket 名称
+    - Returns:
+        - 满足条件的流列表及其详细信息
+5. `BindPushDomain`
+    - 为 Bucket 绑定推流域名
+    - Inputs:
+        - `bucket` (string): bucket 名称
+        - `domain` (string): domain 名称
+        - `type` (string): 推流 类型,可选项rtmp,whip
+    - Returns:
+        - `status_code` (integer): 创建结果code，200代表成功
+6. `BindPlayDomain`
+    - 为 Bucket 绑定播放域名
+    - Inputs:
+        - `bucket` (string): bucket 名称
+        - `domain` (string): domain 名称
+        - `type` (string): 播放协议类型,可选项srt,hls,flv,whep,live
+    - Returns:
+        - `status_code` (integer): 创建结果code，200代表成功
+7. `GetPushUrls`
+    - 获取推流地址
+    - Inputs:
+        - `bucket` (string): bucket 名称
+        - `stream` (string): 流名称
+    - Returns:
+        - `rtmp` (integer): rtmp推流地址
+        - `whip` (integer): webrtc低延迟直播推流地址
+8. `GetPlayUrls`
+    - 获取播放地址
+    - Inputs:
+        - `bucket` (string): bucket 名称
+        - `stream` (string): 流名称
+    - Returns:
+        - `flv` (integer): flv 拉流地址
+        - `hls` (integer): hls 拉流地址
+        - `whep` (integer): 低延迟直播拉流地址
+9. `QueryLiveTrafficStats`
+    - 查询直播流量
+    - Inputs:
+        - `bucket` (string): bucket 名称
+    - Returns:
+        - `data` (Array of integer): 每5分钟的直播流量
 ### 其他工具
 
 1. `Version`
