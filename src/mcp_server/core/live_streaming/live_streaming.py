@@ -1,5 +1,6 @@
 import aiohttp
 import logging
+import qiniu
 
 from typing import Dict, Any
 from ...config import config
@@ -13,11 +14,38 @@ class LiveStreamingService:
         self.config = cfg
         self.api_key = cfg.api_key if cfg else None
         self.endpoint_url = cfg.endpoint_url if cfg else None
+        self.access_key = cfg.access_key if cfg else None
+        self.secret_key = cfg.secret_key if cfg else None
+
+        # Initialize qiniu.Auth if access_key and secret_key are available
+        self.auth = None
+        if self.access_key and self.secret_key and \
+           self.access_key != "YOUR_QINIU_ACCESS_KEY" and \
+           self.secret_key != "YOUR_QINIU_SECRET_KEY":
+            self.auth = qiniu.Auth(self.access_key, self.secret_key)
 
     def _get_auth_header(self) -> Dict[str, str]:
-        """Generate Bearer token authorization header"""
-        if not self.api_key:
-            raise ValueError("QINIU_API_KEY is not configured")
+        """
+        Generate authorization header
+        Priority: QINIU_ACCESS_KEY/QINIU_SECRET_KEY > API KEY
+        """
+        # Priority 1: Use QINIU_ACCESS_KEY/QINIU_SECRET_KEY if configured
+        if self.auth:
+            # Generate Qiniu token for the request
+            # For live streaming API, we use a simple token format
+            token = self.auth.token_of_request(
+                url="",
+                body=None,
+                content_type="application/x-www-form-urlencoded"
+            )
+            return {
+                "Authorization": f"Qiniu {token}"
+            }
+
+        # Priority 2: Fall back to API KEY if ACCESS_KEY/SECRET_KEY not configured
+        if not self.api_key or self.api_key == "YOUR_QINIU_API_KEY":
+            raise ValueError("Neither QINIU_ACCESS_KEY/QINIU_SECRET_KEY nor QINIU_API_KEY is configured")
+
         return {
             "Authorization": f"Bearer {self.api_key}"
         }
@@ -344,5 +372,96 @@ class LiveStreamingService:
                         "begin": begin,
                         "end": end,
                         "message": f"Failed to query traffic stats: {text}",
+                        "status_code": status
+                    }
+
+    async def list_buckets(self) -> Dict[str, Any]:
+        """
+        List all live streaming spaces/buckets
+
+        Returns:
+            Dict containing the list of buckets
+        """
+        if not self.endpoint_url:
+            raise ValueError("QINIU_ENDPOINT_URL is not configured")
+
+        # Remove protocol to get base endpoint
+        endpoint = self.endpoint_url
+        if endpoint.startswith("http://"):
+            endpoint = endpoint[7:]
+        elif endpoint.startswith("https://"):
+            endpoint = endpoint[8:]
+
+        url = f"https://{endpoint}/"
+        headers = self._get_auth_header()
+
+        logger.info(f"Listing all live streaming buckets from {url}")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                status = response.status
+                text = await response.text()
+
+                if status == 200:
+                    logger.info("Successfully listed all buckets")
+                    return {
+                        "status": "success",
+                        "data": text,
+                        "message": "Buckets listed successfully",
+                        "status_code": status
+                    }
+                else:
+                    logger.error(f"Failed to list buckets, status: {status}, response: {text}")
+                    return {
+                        "status": "error",
+                        "message": f"Failed to list buckets: {text}",
+                        "status_code": status
+                    }
+
+    async def list_streams(self, bucket_id: str) -> Dict[str, Any]:
+        """
+        List all streams in a specific live streaming bucket
+
+        Args:
+            bucket_id: The bucket ID/name
+
+        Returns:
+            Dict containing the list of streams in the bucket
+        """
+        if not self.endpoint_url:
+            raise ValueError("QINIU_ENDPOINT_URL is not configured")
+
+        # Remove protocol to get base endpoint
+        endpoint = self.endpoint_url
+        if endpoint.startswith("http://"):
+            endpoint = endpoint[7:]
+        elif endpoint.startswith("https://"):
+            endpoint = endpoint[8:]
+
+        url = f"https://{endpoint}/?streamlist&bucketId={bucket_id}"
+        headers = self._get_auth_header()
+
+        logger.info(f"Listing streams in bucket: {bucket_id}")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                status = response.status
+                text = await response.text()
+
+                if status == 200:
+                    logger.info(f"Successfully listed streams in bucket: {bucket_id}")
+                    return {
+                        "status": "success",
+                        "bucket_id": bucket_id,
+                        "data": text,
+                        "message": f"Streams in bucket '{bucket_id}' listed successfully",
+                        "status_code": status
+                    }
+                else:
+                    logger.error(f"Failed to list streams in bucket: {bucket_id}, status: {status}, response: {text}")
+                    return {
+                        "status": "error",
+                        "bucket_id": bucket_id,
+                        "message": f"Failed to list streams: {text}",
                         "status_code": status
                     }
