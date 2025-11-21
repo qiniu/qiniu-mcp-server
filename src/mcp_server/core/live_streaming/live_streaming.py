@@ -4,7 +4,6 @@ import hmac
 import hashlib
 import json
 import logging
-import qiniu
 from urllib.parse import urlparse
 
 from typing import Dict, Any, Optional
@@ -17,8 +16,8 @@ logger = logging.getLogger(consts.LOGGER_NAME)
 class LiveStreamingService:
     def __init__(self, cfg: config.Config = None):
         self.config = cfg
-        self.api_key = cfg.api_key if cfg else None
-        self.endpoint_url = cfg.endpoint_url if cfg else None
+        self.api_key = cfg.live_api_key if cfg else None
+        self.live_endpoint = cfg.live_endpoint if cfg else "mls.cn-east-1.qiniumiku.com"
         self.access_key = cfg.access_key if cfg else None
         self.secret_key = cfg.secret_key if cfg else None
 
@@ -122,11 +121,11 @@ class LiveStreamingService:
 
     def _build_bucket_url(self, bucket: str) -> str:
         """Build S3-style bucket URL"""
-        if not self.endpoint_url:
-            raise ValueError("QINIU_ENDPOINT_URL is not configured")
+        if not self.live_endpoint:
+            self.live_endpoint = "mls.cn-east-1.qiniumiku.com"
 
-        # Remove protocol if present in endpoint_url
-        endpoint = self.endpoint_url
+        # Remove protocol if present in live_endpoint
+        endpoint = self.live_endpoint
         if endpoint.startswith("http://"):
             endpoint = endpoint[7:]
         elif endpoint.startswith("https://"):
@@ -137,11 +136,11 @@ class LiveStreamingService:
 
     def _build_stream_url(self, bucket: str, stream: str) -> str:
         """Build S3-style stream URL"""
-        if not self.endpoint_url:
-            raise ValueError("QINIU_ENDPOINT_URL is not configured")
+        if not self.live_endpoint:
+            self.live_endpoint = "mls.cn-east-1.qiniumiku.com"
 
-        # Remove protocol if present in endpoint_url
-        endpoint = self.endpoint_url
+        # Remove protocol if present in live_endpoint
+        endpoint = self.live_endpoint
         if endpoint.startswith("http://"):
             endpoint = endpoint[7:]
         elif endpoint.startswith("https://"):
@@ -398,11 +397,11 @@ class LiveStreamingService:
         Returns:
             Dict containing traffic statistics
         """
-        if not self.endpoint_url:
-            raise ValueError("QINIU_ENDPOINT_URL is not configured")
+        if not self.live_endpoint:
+            self.live_endpoint = "mls.cn-east-1.qiniumiku.com"
 
         # Remove protocol and bucket prefix to get base endpoint
-        endpoint = self.endpoint_url
+        endpoint = self.live_endpoint
         if endpoint.startswith("http://"):
             endpoint = endpoint[7:]
         elif endpoint.startswith("https://"):
@@ -451,11 +450,11 @@ class LiveStreamingService:
         Returns:
             Dict containing the list of buckets
         """
-        if not self.endpoint_url:
-            raise ValueError("QINIU_ENDPOINT_URL is not configured")
+        if not self.live_endpoint:
+            self.live_endpoint = "mls.cn-east-1.qiniumiku.com"
 
         # Remove protocol to get base endpoint
-        endpoint = self.endpoint_url
+        endpoint = self.live_endpoint
         if endpoint.startswith("http://"):
             endpoint = endpoint[7:]
         elif endpoint.startswith("https://"):
@@ -497,11 +496,11 @@ class LiveStreamingService:
         Returns:
             Dict containing the list of streams in the bucket
         """
-        if not self.endpoint_url:
-            raise ValueError("QINIU_ENDPOINT_URL is not configured")
+        if not self.live_endpoint:
+            self.live_endpoint = "mls.cn-east-1.qiniumiku.com"
 
         # Remove protocol to get base endpoint
-        endpoint = self.endpoint_url
+        endpoint = self.live_endpoint
         if endpoint.startswith("http://"):
             endpoint = endpoint[7:]
         elif endpoint.startswith("https://"):
