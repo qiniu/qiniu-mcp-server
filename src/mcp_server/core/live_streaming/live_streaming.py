@@ -42,7 +42,7 @@ class LiveStreamingService:
                 "Authorization": f"Qiniu {token}"
             }
         return  {
-            "Authorization": f"Qiniu ak:sk"
+            "Authorization": "Qiniu ak:sk"
         }
 
     def _build_bucket_url(self, bucket: str) -> str:
@@ -96,7 +96,7 @@ class LiveStreamingService:
 
         # 打印 HTTP 请求信息
         print("=== HTTP 请求信息 ===")
-        print(f"方法: PUT")
+        print("方法: PUT")
         print(f"URL: {url}")
         print("请求头:")
         for key, value in headers.items():
@@ -111,7 +111,6 @@ class LiveStreamingService:
                 status = response.status
                 text = await response.text()
 
-                print(f"=== HTTP 响应信息 ===")
                 print(f"状态码: {status}")
                 print(f"响应内容: {text}")
                 print("==================")
