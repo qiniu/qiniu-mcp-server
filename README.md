@@ -98,7 +98,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 5. 在 Cline 中创建一个聊天窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出直播系统的几个示例：
     - 列举所有的直播空间
     - 新创建1个直播空间,命名为mcptest1123
-    - 为mcptest1123新创建1个流，命名为stream1
+    - 为mcptest1123新创建1个流,命名为stream1
     - 列举一下直播空间mcptest1123中所有的流
     - 为mcptest1123绑定推流域名 <your-push-domain>, 绑定拉流域名<your-play-domain>
     - 获取mcptest1123下直播流stream1，对应的推流地址和拉流地址
