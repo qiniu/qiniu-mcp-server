@@ -88,13 +88,21 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
    }
    ```
     3. 点击 qiniu MCP Server 的链接开关进行连接
-4. 在 Cline 中创建一个聊天窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出几个示例：
+4. 在 Cline 中创建一个聊天窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出对象存储的几个示例：
     - 列举 qiniu 的资源信息
     - 列举 qiniu 中所有的 Bucket
     - 列举 qiniu 中 xxx Bucket 的文件
     - 读取 qiniu xxx Bucket 中 yyy 的文件内容
     - 对 qiniu xxx Bucket 中 yyy 的图片切个宽200像素的圆角
     - 刷新下 qiniu 的这个 CDN 链接：https://developer.qiniu.com/test.txt
+5. 在 Cline 中创建一个聊天窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出直播系统的几个示例：
+    - 列举所有的直播空间
+    - 新创建1个直播空间,命名为mcptest1123
+    - 为mcptest1123新创建1个流，命名为stream1
+    - 列举一下直播空间mcptest1123中所有的流
+    - 为mcptest1123绑定推流域名 <your-push-domain>, 绑定拉流域名<your-play-domain>
+    - 获取mcptest1123下直播流stream1，对应的推流地址和拉流地址
+    - 获取最近1个小时直播的用量
 
 注：
 cursor 中创建 MCP Server 可直接使用上述配置。
