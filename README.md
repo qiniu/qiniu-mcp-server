@@ -87,6 +87,41 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
      }
    }
    ```
+
+   ```
+   如果只使用直播功能时，支持两种鉴权模式
+   1 配置QINIU_ACCESS_KEY/QINIU_SECRET_KEY
+   {
+     "mcpServers": {
+       "qiniu": {
+         "command": "uvx",
+         "args": [
+           "qiniu-mcp-server"
+         ],
+         "env": {
+           "QINIU_ACCESS_KEY": "YOUR_ACCESS_KEY",
+           "QINIU_SECRET_KEY": "YOUR_SECRET_KEY"
+        },
+         "disabled": false
+       }
+     }
+   }
+   2 可在七牛直播控制台获取apikey后，配置QINIU_LIVE_API_KEY
+   {
+     "mcpServers": {
+       "qiniu": {
+         "command": "uvx",
+         "args": [
+           "qiniu-mcp-server"
+         ],
+         "env": {
+           "QINIU_LIVE_API_KEY": "YOUR_LIVE_API_KEY"
+        },
+         "disabled": false
+       }
+     }
+   }
+   ```
     3. 点击 qiniu MCP Server 的链接开关进行连接
 4. 在 Cline 中创建一个聊天窗口，此时我们可以和 AI 进行交互来使用 qiniu-mcp-server ，下面给出对象存储的几个示例：
     - 列举 qiniu 的资源信息
