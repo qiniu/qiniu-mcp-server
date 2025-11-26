@@ -177,7 +177,7 @@ class _ToolImpl:
     @tools.tool_meta(
         types.Tool(
             name="live_streaming_query_live_traffic_stats",
-            description="Query live streaming traffic statistics for a time range. Returns bandwidth and traffic usage data.",
+            description="Query live streaming traffic statistics for a time range. Returns total traffic (bytes), average bandwidth (bps), peak bandwidth (bps), and optionally raw data for download.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -188,6 +188,11 @@ class _ToolImpl:
                     "end": {
                         "type": "string",
                         "description": "End time in format YYYYMMDDHHMMSS (e.g., 20240129105148)",
+                    },
+                    "include_raw_data": {
+                        "type": "boolean",
+                        "description": "If true, includes raw JSON data and detailed data points for download. Default is false.",
+                        "default": False,
                     },
                 },
                 "required": ["begin", "end"],
