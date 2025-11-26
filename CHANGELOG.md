@@ -1,3 +1,6 @@
+# v1.4.1
+- 直播服务修复query_live_traffic_stats
+
 # v1.4.0
 - 直播服务增加更多的tools支持
 

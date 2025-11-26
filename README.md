@@ -3,9 +3,7 @@
 ## 概述
 
 基于七牛云产品构建的 Model Context Protocol (MCP) Server，支持用户在 AI 大模型客户端的上下文中通过该 MCP
-Server 来访问七牛云存储、智能多媒体服务等。
-
-关于访问七牛云存储详细情况请参考 [基于 MCP 使用大模型访问七牛云存储](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
+Server 来访问七牛云存储、智能多媒体，直播服务等。
 
 能力集：
 - 存储
@@ -14,6 +12,7 @@ Server 来访问七牛云存储、智能多媒体服务等。
   - 上传本地文件，以及给出文件内容进行上传
   - 读取文件内容
   - 获取文件下载链接
+  - 关于访问七牛云存储详细情况请参考 [基于 MCP 使用大模型访问七牛云存储](https://developer.qiniu.com/kodo/12914/mcp-aimodel-kodo)。
 - 智能多媒体
   - 图片缩放
   - 图片切圆角
