@@ -28,6 +28,10 @@ Server 来访问七牛云存储、智能多媒体，直播服务等。
     - 获取推拉流直播地址
     - 获取直播用量
 
+<a href="https://glama.ai/mcp/servers/@qiniu/qiniu-mcp-server">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@qiniu/qiniu-mcp-server/badge" alt="Qiniu Server MCP server" />
+</a>
+
 ## 环境要求
 
 - Python 3.12 或更高版本
@@ -225,7 +229,3 @@ uv --directory . run qiniu-mcp-server
 ```bash
 uv --directory . run qiniu-mcp-server --transport sse --port 8000
 ```
-
-
-
-
